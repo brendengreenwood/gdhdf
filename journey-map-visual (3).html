@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pricing Tool — User Journey Map</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  :root {
+    --bg: #e2e5eb;
+    --surface: #ffffff;
+    --border: #dde1e9;
+    --muted: #8892a4;
+    --text: #1a1f2e;
+    --text-bright: #0d1117;
+    --text-body: #4a5568;
+    --pain: #c0392b;
+    --mid: #b96a0a;
+    --gain: #1a8a4a;
+    --step-w: 210px;
+    --persona-w: 120px;
+    --arrow-w: 36px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: var(--bg);
+    font-family: 'IBM Plex Sans', sans-serif;
+    color: var(--text);
+  }
+
+  body {
+    padding: 36px 44px;
+    overflow-x: auto;
+  }
+
+  .page-inner {
+    display: inline-flex;
+    flex-direction: column;
+    min-width: max-content;
+  }
+
+  /* HEADER */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    width: 100%;
+  }
+
+  .page-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #2563a8;
+  }
+
+  .page-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* MAIN 3-COLUMN LAYOUT */
+  .columns {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0;
+  }
+
+  /* ARROW BETWEEN COLUMNS */
+  .col-arrow {
+    flex: 0 0 var(--arrow-w);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #b0bac8;
+    padding-top: 36px; /* align with content, below phase header */
+    align-self: stretch;
+  }
+
+  /* PHASE COLUMN */
+  .phase-col {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+  }
+
+  /* PHASE HEADER */
+  .phase-header {
+    padding: 10px 16px;
+    border-radius: 3px 3px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 3px;
+  }
+
+  .phase-header.no-poc { background: #ede9f8; border: 1px solid #c4b8ee; }
+  .phase-header.poc    { background: #fef3e2; border: 1px solid #f0c070; }
+  .phase-header.mvp    { background: #e6f7ee; border: 1px solid #7ed4a4; }
+
+  .phase-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .phase-tag.no-poc { color: #5a3ab0; }
+  .phase-tag.poc    { color: #9a5a08; }
+  .phase-tag.mvp    { color: #1a7a40; }
+
+  .phase-subdesc {
+    font-size: 11px;
+    color: #6a7080;
+    font-style: italic;
+  }
+
+  /* PERSONA ROW inside a column */
+  .persona-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    margin-bottom: 3px;
+  }
+
+  /* PERSONA CELL */
+  .persona-cell {
+    flex: 0 0 var(--persona-w);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 16px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-right: none;
+    border-radius: 2px 0 0 2px;
+    align-self: stretch;
+  }
+
+  .persona-icon { font-size: 16px; margin-bottom: 6px; }
+
+  .persona-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .persona-name.merchant   { color: #5a3ab0; }
+  .persona-name.originator { color: #1a7a40; }
+
+  .persona-role {
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.4;
+    white-space: normal;
+  }
+
+  /* STEPS PANEL */
+  .steps-panel {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    border: 1px solid var(--border);
+    border-radius: 0 2px 2px 0;
+    flex: 1;
+  }
+
+  .steps-panel.no-poc-merchant   { background: #f8f6ff; border-color: #c4b8ee; }
+  .steps-panel.no-poc-originator { background: #f5f3fe; border-color: #c4b8ee; }
+  .steps-panel.poc-merchant      { background: #fffaf0; border-color: #f0c070; }
+  .steps-panel.poc-originator    { background: #fef8ec; border-color: #f0c070; }
+  .steps-panel.mvp-merchant      { background: #f0fbf4; border-color: #7ed4a4; }
+  .steps-panel.mvp-originator    { background: #edf9f2; border-color: #7ed4a4; }
+
+  /* STEP CARD */
+  .step {
+    flex: 0 0 var(--step-w);
+    width: var(--step-w);
+    display: flex;
+    flex-direction: column;
+    padding: 14px 16px;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+
+  .step:last-child { border-right: none; }
+
+  .step::after {
+    content: '›';
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 15px;
+    color: #b0bac8;
+    z-index: 2;
+  }
+
+  .step:last-child::after { display: none; }
+
+  .step-phase {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    opacity: 0.45;
+  }
+
+  .no-poc-merchant .step-phase,
+  .no-poc-originator .step-phase { color: #7050c0; }
+  .poc-merchant .step-phase,
+  .poc-originator .step-phase    { color: #9a5a08; }
+  .mvp-merchant .step-phase,
+  .mvp-originator .step-phase    { color: #1a7a40; }
+
+  .step-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 6px;
+    line-height: 1.3;
+    white-space: normal;
+  }
+
+  .step-detail {
+    font-size: 10px;
+    color: var(--text-body);
+    line-height: 1.55;
+    flex: 1;
+    white-space: normal;
+  }
+
+  .step-tag {
+    display: inline-flex;
+    align-items: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    padding: 2px 7px;
+    border-radius: 2px;
+    margin-top: 8px;
+    align-self: flex-start;
+    white-space: nowrap;
+  }
+
+  .tag-pain { background: #fdecea; color: var(--pain); border: 1px solid #f5b8b0; }
+  .tag-mid  { background: #fef3e2; color: var(--mid);  border: 1px solid #f0c070; }
+  .tag-gain { background: #e6f7ee; color: var(--gain); border: 1px solid #7ed4a4; }
+
+  .step-tags {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 8px;
+  }
+
+  .step-tags .step-tag { margin-top: 0; }
+
+  .tag-tool {
+    background: #f0f2f5;
+    color: #6a7888;
+    border: 1px solid #ccd2da;
+  }
+
+  /* INSIGHT BAR */
+  .insight-bar {
+    display: flex;
+    flex-direction: row;
+    gap: 3px;
+    margin-top: 20px;
+    width: 100%;
+  }
+
+  .insight-cell {
+    flex: 1;
+    padding: 14px 18px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+
+  .insight-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8892a4;
+    margin-bottom: 6px;
+  }
+
+  .insight-from {
+    font-size: 11px;
+    color: #c0392b;
+    margin-bottom: 4px;
+    font-weight: 600;
+    white-space: normal;
+  }
+
+  .insight-to {
+    font-size: 11px;
+    color: #1a8a4a;
+    font-weight: 600;
+    white-space: normal;
+  }
+</style>
+</head>
+<body>
+<div class="page-inner">
+
+  <div class="page-header">
+    <div class="page-title">User Journey Map — Merchant &amp; Originator</div>
+    <div class="page-meta">No POC → POC → MVP · Working Draft · March 2026</div>
+  </div>
+
+  <div class="columns">
+
+    <!-- ══ NO POC COLUMN ══ -->
+    <div class="phase-col">
+      <div class="phase-header no-poc">
+        <span class="phase-tag no-poc">No POC</span>
+        <span class="phase-subdesc">Memory, spreadsheets, Salesforce queue</span>
+      </div>
+
+      <!-- Merchant -->
+      <div class="persona-row">
+        <div class="persona-cell">
+          <div class="persona-icon">🌾</div>
+          <div class="persona-name merchant">Merchant</div>
+          <div class="persona-role">Calculates position, sets pricing strategy</div>
+        </div>
+        <div class="steps-panel no-poc-merchant">
+          <div class="step">
+            <div class="step-phase">Plan</div>
+            <div class="step-title">Review position, develop strategy</div>
+            <div class="step-detail">Builds position and strategy from multiple sources into a custom spreadsheet.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">Disparate data sources</span><span class="step-tag tag-tool">⬡ Excel · Memory</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Handoff</div>
+            <div class="step-title">Sets coverage and pricing targets via team call and email</div>
+            <div class="step-detail">Built by hand and delivered in weekly call and/or emailed.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">Manual delivery</span><span class="step-tag tag-tool">⬡ Excel · Email · Phone</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Wait</div>
+            <div class="step-title">Reviews &amp; calculates progress manually</div>
+            <div class="step-detail">Receives contract reports and calculates coverage against position manually.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">Blind all week</span><span class="step-tag tag-tool">⬡ ERP · Excel · Memory</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Originator -->
+      <div class="persona-row">
+        <div class="persona-cell">
+          <div class="persona-icon">📞</div>
+          <div class="persona-name originator">Originator</div>
+          <div class="persona-role">Executes pricing. Works leads inbound &amp; outbound.</div>
+        </div>
+        <div class="steps-panel no-poc-originator">
+          <div class="step">
+            <div class="step-phase">Receive</div>
+            <div class="step-title">Weekly target &amp; strategy from merchant</div>
+            <div class="step-detail">Usually in a Monday call with team or via an email from merchant.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">No pricing context</span><span class="step-tag tag-tool">⬡ Email · Phone</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Inbound</div>
+            <div class="step-title">Fields inbound calls</div>
+            <div class="step-detail">Works inbound leads via Salesforce/Five9. Makes offers from in-the-moment pricing calculations.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">No pricing context</span><span class="step-tag tag-tool">⬡ Salesforce · Five9 · Phone</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Receive</div>
+            <div class="step-title">Outbound calls, Salesforce contact window + customer list</div>
+            <div class="step-detail">Starts with 12-week contact window then works customer list. No targeted leads, no pricing context attached. Pricing calculated on the fly from memory.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">Generic queue</span><span class="step-tag tag-tool">⬡ Salesforce · Phone</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Prioritize</div>
+            <div class="step-title">Rely on personal knowledge</div>
+            <div class="step-detail">Who likely has what the merchant needs. Entirely experience-dependent.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">Knowledge-dependent</span><span class="step-tag tag-tool">⬡ Memory</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Log</div>
+            <div class="step-title">Log outcomes inconsistently</div>
+            <div class="step-detail">No standard. Each originator logs unique notes in SF comment field. Merchant sees nothing.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">No feedback standard</span><span class="step-tag tag-tool">⬡ Salesforce</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-arrow">→</div>
+
+    <!-- ══ POC COLUMN ══ -->
+    <div class="phase-col">
+      <div class="phase-header poc">
+        <span class="phase-tag poc">POC</span>
+        <span class="phase-subdesc">Tool exists but requires manual steps</span>
+      </div>
+
+      <!-- Merchant -->
+      <div class="persona-row">
+        <div class="persona-cell">
+          <div class="persona-icon">🌾</div>
+          <div class="persona-name merchant">Merchant</div>
+          <div class="persona-role">Sets pricing strategy &amp; position</div>
+        </div>
+        <div class="steps-panel poc-merchant">
+          <div class="step">
+            <div class="step-phase">Plan</div>
+            <div class="step-title">Review position, develop strategy</div>
+            <div class="step-detail">Builds position and strategy from multiple sources into a custom spreadsheet. Still happens before entering the tool.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">Disparate data sources</span><span class="step-tag tag-tool">⬡ Excel · Memory</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Build</div>
+            <div class="step-title">Enter variables, build landscape</div>
+            <div class="step-detail">Selects date, contract, and commodity. Inputs basis, max, freight. Can manually add competitors to the map if data is missing or out of date. ML generates territory and pricing — but only after hitting apply.</div>
+            <div class="step-tags"><span class="step-tag tag-mid">ML in the loop</span><span class="step-tag tag-tool">⬡ POC Tool</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Review</div>
+            <div class="step-title">View producers on map</div>
+            <div class="step-detail">Producers appear on the map with strategic bid prices plotted. A table view also exists but is visually disconnected from the map — merchant has to mentally reconcile the two.</div>
+            <div class="step-tags"><span class="step-tag tag-mid">Spatial review</span><span class="step-tag tag-pain">Disconnected views</span><span class="step-tag tag-tool">⬡ POC Tool</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Filter</div>
+            <div class="step-title">Filter producers manually</div>
+            <div class="step-detail">Removes recent spot price producers and recently contacted producers by hand. Can select an originator and generate a spreadsheet per person — but must repeat the process for each one. Or generate one combined file and manually split it later.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">Repetitive per originator</span><span class="step-tag tag-tool">⬡ POC Tool</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Export</div>
+            <div class="step-title">Generate spreadsheet</div>
+            <div class="step-detail">Option A: one file per originator — must clean excess columns each time. Option B: one combined file — clean columns once but then manually split into separate files per originator. Both are painful. Any pricing changes after export aren't reflected.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">Noisy export</span><span class="step-tag tag-tool">⬡ POC Tool · Excel</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Handoff</div>
+            <div class="step-title">Email to originators</div>
+            <div class="step-detail">Sent manually via email. No confirmation of receipt, no versioning, no live connection.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">Disconnected handoff</span><span class="step-tag tag-tool">⬡ Email</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Monitor</div>
+            <div class="step-title">Pull report, scan manually</div>
+            <div class="step-detail">Pulls sales contract report. Manually scans a large table to identify which incoming contracts were strategic bids — from memory.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">No attribution</span><span class="step-tag tag-tool">⬡ ERP · Spreadsheet</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Originator -->
+      <div class="persona-row">
+        <div class="persona-cell">
+          <div class="persona-icon">📞</div>
+          <div class="persona-name originator">Originator</div>
+          <div class="persona-role">Executes pricing. Works leads inbound &amp; outbound.</div>
+        </div>
+        <div class="steps-panel poc-originator">
+          <div class="step">
+            <div class="step-phase">Receive</div>
+            <div class="step-title">Weekly target &amp; strategy from merchant</div>
+            <div class="step-detail">Usually in a Monday call with team or via an email from merchant. Still happens before the lead list arrives.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">Manual delivery</span><span class="step-tag tag-tool">⬡ Email · Phone</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Receive</div>
+            <div class="step-title">Receive lead list from merchant via email</div>
+            <div class="step-detail">Either receives their own file or a combined file and has to filter for their own leads. If the merchant didn't clean up the export, the originator also has to remove the excess columns themselves before the data is usable. For mobile originators working in the field, the spreadsheet is almost entirely unusable on a phone.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">Messy handoff</span><span class="step-tag tag-pain">Unusable on mobile</span><span class="step-tag tag-tool">⬡ Email · Excel</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Inbound</div>
+            <div class="step-title">Inbound call, no bid price in context</div>
+            <div class="step-detail">No strategic bid price visible in Salesforce. Must remember if producer is on the active list or cross-reference the spreadsheet mid-call.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">No in-context price</span><span class="step-tag tag-tool">⬡ Salesforce · Excel · Memory</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Prioritize</div>
+            <div class="step-title">Outbound calls, POC lead list spreadsheet</div>
+            <div class="step-detail">Some targeting — POC gives leads based on ML territory. Better prioritization. Still a spreadsheet in the field — nearly unusable on mobile for originators on the road.</div>
+            <div class="step-tags"><span class="step-tag tag-mid">Some targeting</span><span class="step-tag tag-pain">Unusable on mobile</span><span class="step-tag tag-tool">⬡ Excel · Phone</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Call</div>
+            <div class="step-title">Call with price from spreadsheet</div>
+            <div class="step-detail">Bid price present but static — no live updates if merchant changes pricing mid-week.</div>
+            <div class="step-tags"><span class="step-tag tag-mid">Static pricing</span><span class="step-tag tag-tool">⬡ Phone · Excel</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Log</div>
+            <div class="step-title">No structured outcome log</div>
+            <div class="step-detail">Outcomes not fed back into the tool. Feedback loop still broken.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">Loop still broken</span><span class="step-tag tag-tool">⬡ Salesforce</span></div>
+          </div>
+          <div class="step" style="opacity:0; pointer-events:none;">
+            <div class="step-phase">—</div>
+            <div class="step-title">&nbsp;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-arrow">→</div>
+
+    <!-- ══ MVP COLUMN ══ -->
+    <div class="phase-col">
+      <div class="phase-header mvp">
+        <span class="phase-tag mvp">MVP</span>
+        <span class="phase-subdesc">Live scenario, real-time feedback loop</span>
+      </div>
+
+      <!-- Merchant -->
+      <div class="persona-row">
+        <div class="persona-cell">
+          <div class="persona-icon">🌾</div>
+          <div class="persona-name merchant">Merchant</div>
+          <div class="persona-role">Sets pricing strategy &amp; position</div>
+        </div>
+        <div class="steps-panel mvp-merchant">
+          <div class="step">
+            <div class="step-phase">Plan</div>
+            <div class="step-title">Review position, develop strategy</div>
+            <div class="step-detail">Builds position and strategy from multiple sources. Still happens outside the tool before the week begins.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">Disparate data sources</span><span class="step-tag tag-tool">⬡ Excel · Memory</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Build</div>
+            <div class="step-title">Open tool, build scenario</div>
+            <div class="step-detail">Enters the tool to translate strategy into a live scenario. Selects date, contract, commodity, inputs basis, max, freight.</div>
+            <div class="step-tags"><span class="step-tag tag-gain">Strategy to execution</span><span class="step-tag tag-tool">⬡ Pricing Tool</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Model</div>
+            <div class="step-title">Nudge inputs, shape updates</div>
+            <div class="step-detail">ML generates territory and bid prices as inputs change. No apply button needed.</div>
+            <div class="step-tags"><span class="step-tag tag-gain">Real-time modeling</span><span class="step-tag tag-tool">⬡ Pricing Tool · ML</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Activate</div>
+            <div class="step-title">Activate scenario</div>
+            <div class="step-detail">Cascades to lead lists, Salesforce bid prices, and producer accounts automatically.</div>
+            <div class="step-tags"><span class="step-tag tag-gain">Auto cascade</span><span class="step-tag tag-tool">⬡ Pricing Tool · Salesforce</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Monitor</div>
+            <div class="step-title">Monitor on dashboard</div>
+            <div class="step-detail">Contracts attributed to scenario automatically. Rejected bids accumulate in real time — merchant can see when a scenario is underperforming without waiting for a report.</div>
+            <div class="step-tags"><span class="step-tag tag-gain">Auto attribution</span><span class="step-tag tag-tool">⬡ Pricing Tool · ERP</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Revise</div>
+            <div class="step-title">Revise mid-week</div>
+            <div class="step-detail">Hit Revise, adjust, child scenario created. Closed leads excluded. All systems updated.</div>
+            <div class="step-tags"><span class="step-tag tag-gain">Mid-cycle control</span><span class="step-tag tag-tool">⬡ Pricing Tool</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Close</div>
+            <div class="step-title">Export performance, update position</div>
+            <div class="step-detail">Exports scenario performance data and manually incorporates closed contracts into position calculations for the following week. Tool boundary — position management still lives outside the system.</div>
+            <div class="step-tags"><span class="step-tag tag-mid">Manual reconciliation</span><span class="step-tag tag-tool">⬡ Pricing Tool · Excel</span></div>
+          </div>
+          <div class="step" style="opacity:0; pointer-events:none;">
+            <div class="step-phase">—</div>
+            <div class="step-title">&nbsp;</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Originator -->
+      <div class="persona-row">
+        <div class="persona-cell">
+          <div class="persona-icon">📞</div>
+          <div class="persona-name originator">Originator</div>
+          <div class="persona-role">Executes pricing. Works leads inbound &amp; outbound.</div>
+        </div>
+        <div class="steps-panel mvp-originator">
+          <div class="step">
+            <div class="step-phase">Receive</div>
+            <div class="step-title">Weekly target &amp; strategy from merchant</div>
+            <div class="step-detail">Monday call or email still happens. Sets context before opening the tool.</div>
+            <div class="step-tags"><span class="step-tag tag-pain">Manual delivery</span><span class="step-tag tag-tool">⬡ Email · Phone</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Notify</div>
+            <div class="step-title">Receive new scenario notification</div>
+            <div class="step-detail">Email notification sent on scenario activation. Contains a direct link that opens the tool to their personal lead list with producers plotted on the map and bid prices ready.</div>
+            <div class="step-tags"><span class="step-tag tag-gain">Zero friction entry</span><span class="step-tag tag-tool">⬡ Email · Pricing Tool</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Receive</div>
+            <div class="step-title">Open lead list in tool</div>
+            <div class="step-detail">ML-targeted, priced, and ready. Linked to producer Salesforce accounts directly.</div>
+            <div class="step-tags"><span class="step-tag tag-gain">Targeted leads</span><span class="step-tag tag-tool">⬡ Pricing Tool · Salesforce</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Call</div>
+            <div class="step-title">Outbound calls, live bid price in tool</div>
+            <div class="step-detail">Works ML-targeted lead list. Bid price is live — always current. One click to Salesforce producer record. Logs accepted or rejected directly in the tool.</div>
+            <div class="step-tags"><span class="step-tag tag-gain">Live pricing</span><span class="step-tag tag-tool">⬡ Pricing Tool · Salesforce</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Log</div>
+            <div class="step-title">Log outcome — tool &amp; SF</div>
+            <div class="step-detail">Outbound logged in tool. Inbound logged in Salesforce with yes/no and reason.</div>
+            <div class="step-tags"><span class="step-tag tag-gain">Structured capture</span><span class="step-tag tag-tool">⬡ Pricing Tool · Salesforce</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Inbound</div>
+            <div class="step-title">Producer calls in, bid price in context</div>
+            <div class="step-detail">Bid price surfaced directly in the producer's Salesforce record with accept/reject options inline. Optionally, a deep link opens the tool to that exact producer — map view, bid price, full scenario context. Originator can work entirely in Salesforce or switch to the tool and back as needed.</div>
+            <div class="step-tags"><span class="step-tag tag-gain">Full context</span><span class="step-tag tag-tool">⬡ Salesforce · Pricing Tool</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Reconcile</div>
+            <div class="step-title">Inbound auto-reconciled</div>
+            <div class="step-detail">If lead exists outbound, tool removes it automatically. No duplicate effort.</div>
+            <div class="step-tags"><span class="step-tag tag-gain">Auto-reconciliation</span><span class="step-tag tag-tool">⬡ Pricing Tool</span></div>
+          </div>
+          <div class="step">
+            <div class="step-phase">Notify</div>
+            <div class="step-title">Receive revised scenario notification</div>
+            <div class="step-detail">When the merchant revises mid-week — triggered by rejected bids piling up — originators receive an email notification. Deep link opens the updated lead list and map with new bid prices.</div>
+            <div class="step-tags"><span class="step-tag tag-gain">Always current</span><span class="step-tag tag-tool">⬡ Email · Pricing Tool</span></div>
+          </div>
+          <div class="step" style="opacity:0.45; border: 1px dashed #b0bac8; border-radius: 2px;">
+            <div class="step-phase" style="opacity:1;">Future State</div>
+            <div class="step-title" style="color:#8892a4;">Contract Originator (iPad)</div>
+            <div class="step-detail" style="color:#a0a8b8;">Separate persona handling contract creation. Bid price data from active scenarios surfaces in iPad app when a producer calls in or walks in to sell. Expand into dedicated lane in next iteration.</div>
+            <div class="step-tags"><span class="step-tag tag-tool">⬡ iPad App · Pricing Tool</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end columns -->
+
+  <!-- LEGEND -->
+  <div style="display:flex; gap:12px; margin-top:20px; margin-bottom:8px; align-items:center;">
+    <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:#3a4060; margin-right:4px;">Legend</span>
+    <span class="step-tag tag-pain" style="margin-top:0;">Pain point</span>
+    <span class="step-tag tag-mid" style="margin-top:0;">Partial / workaround</span>
+    <span class="step-tag tag-gain" style="margin-top:0;">MVP improvement</span>
+    <span class="step-tag tag-tool" style="margin-top:0;">⬡ Tools used</span>
+  </div>
+
+  <!-- INSIGHT BAR -->
+  <div class="insight-bar">
+    <div class="insight-cell">
+      <div class="insight-label">Pricing</div>
+      <div class="insight-from">Memory &amp; gut feel</div>
+      <div class="insight-to">→ ML-generated model</div>
+    </div>
+    <div class="insight-cell">
+      <div class="insight-label">Lead Generation</div>
+      <div class="insight-from">12-week contact queue</div>
+      <div class="insight-to">→ ML-targeted list</div>
+    </div>
+    <div class="insight-cell">
+      <div class="insight-label">Handoff</div>
+      <div class="insight-from">Manual spreadsheet via email</div>
+      <div class="insight-to">→ Automated cascade</div>
+    </div>
+    <div class="insight-cell">
+      <div class="insight-label">Feedback Loop</div>
+      <div class="insight-from">7 days minimum</div>
+      <div class="insight-to">→ Real time</div>
+    </div>
+    <div class="insight-cell">
+      <div class="insight-label">Contract Attribution</div>
+      <div class="insight-from">Manual report scanning</div>
+      <div class="insight-to">→ Automatic</div>
+    </div>
+    <div class="insight-cell">
+      <div class="insight-label">Outcome Data</div>
+      <div class="insight-from">Lost or inconsistent</div>
+      <div class="insight-to">→ ML training data</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function normalizeRowHeights() {
+    // Normalize persona-row heights across columns (merchant rows, then originator rows)
+    const allRows = document.querySelectorAll('.persona-row');
+    
+    // Group by index within their parent phase-col
+    const rowsByIndex = {};
+    allRows.forEach(row => {
+      const col = row.closest('.phase-col');
+      const siblings = Array.from(col.querySelectorAll('.persona-row'));
+      const idx = siblings.indexOf(row);
+      if (!rowsByIndex[idx]) rowsByIndex[idx] = [];
+      rowsByIndex[idx].push(row);
+    });
+
+    // For each row index, find the tallest and set all to that height
+    Object.values(rowsByIndex).forEach(rows => {
+      // Reset first
+      rows.forEach(r => r.style.height = 'auto');
+      // Find max
+      const maxH = Math.max(...rows.map(r => r.offsetHeight));
+      // Apply
+      rows.forEach(r => r.style.height = maxH + 'px');
+    });
+  }
+
+  // Run on load and on resize
+  window.addEventListener('load', normalizeRowHeights);
+  window.addEventListener('resize', normalizeRowHeights);
+</script>
+</body>
+</html>
