@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pricing Tool — User Journey Map</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  :root {
+    --bg: #08090f;
+    --surface: #0d0f1a;
+    --border: #1a1f35;
+    --border-light: #252a42;
+    --text: #cdd5e0;
+    --muted: #4a5270;
+    --merchant-current: #1a1535;
+    --merchant-current-accent: #6b48c8;
+    --originator-current: #0f1e1a;
+    --originator-current-accent: #2d7a5a;
+    --merchant-mvp: #0f1828;
+    --merchant-mvp-accent: #3a8fd4;
+    --originator-mvp: #141020;
+    --originator-mvp-accent: #9b59d4;
+    --pain: #c0392b;
+    --pain-bg: #1a0c0a;
+    --gain: #27ae60;
+    --gain-bg: #0a1a10;
+    --connector: #1e2540;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    font-family: 'IBM Plex Sans', sans-serif;
+    color: var(--text);
+    padding: 56px 40px;
+    min-width: 1200px;
+  }
+
+  /* ── HEADER ── */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+    margin-bottom: 48px;
+  }
+
+  .page-header h1 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #4a90d9;
+  }
+
+  .page-header p {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── SECTION HEADERS ── */
+  .state-header {
+    display: grid;
+    grid-template-columns: 160px 1fr 1fr;
+    gap: 0;
+    margin-bottom: 0;
+  }
+
+  .state-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    border-radius: 3px 3px 0 0;
+    text-align: center;
+  }
+
+  .state-label.current {
+    background: #12101e;
+    color: #6b48c8;
+    border: 1px solid #2a1f4a;
+    border-bottom: none;
+    margin-right: 2px;
+  }
+
+  .state-label.mvp {
+    background: #0a1220;
+    color: #3a8fd4;
+    border: 1px solid #1a3050;
+    border-bottom: none;
+  }
+
+  .state-label-spacer {
+    /* empty left column spacer */
+  }
+
+  /* ── JOURNEY BLOCK ── */
+  .journey-block {
+    display: grid;
+    grid-template-columns: 160px 1fr 1fr;
+    gap: 0;
+    margin-bottom: 3px;
+  }
+
+  /* Persona label column */
+  .persona-label {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 24px 20px;
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-right: none;
+  }
+
+  .persona-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .persona-name.merchant { color: #7b6ad4; }
+  .persona-name.originator { color: #3ab48a; }
+
+  .persona-desc {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  /* State panels */
+  .state-panel {
+    padding: 24px 28px;
+    border: 1px solid var(--border);
+    position: relative;
+  }
+
+  .state-panel.current-merchant { background: var(--merchant-current); border-color: #2a1f4a; }
+  .state-panel.current-originator { background: var(--originator-current); border-color: #1a3028; }
+  .state-panel.mvp-merchant { background: var(--merchant-mvp); border-color: #1a3050; }
+  .state-panel.mvp-originator { background: var(--originator-mvp); border-color: #28184a; }
+
+  /* Steps */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .current-merchant .step-num { background: #2a1f4a; color: #9b7ae0; }
+  .current-originator .step-num { background: #1a3028; color: #3ab48a; }
+  .mvp-merchant .step-num { background: #1a3050; color: #5aaae0; }
+  .mvp-originator .step-num { background: #28184a; color: #b07ae0; }
+
+  .step-content {}
+
+  .step-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+    line-height: 1.3;
+  }
+
+  .step-detail {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* Tags */
+  .tag {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    padding: 2px 7px;
+    border-radius: 2px;
+    margin-top: 5px;
+  }
+
+  .tag.pain {
+    background: var(--pain-bg);
+    color: var(--pain);
+    border: 1px solid #3a1510;
+  }
+
+  .tag.gain {
+    background: var(--gain-bg);
+    color: var(--gain);
+    border: 1px solid #143020;
+  }
+
+  .tag.neutral {
+    background: #12141e;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  /* ── DIVIDER BETWEEN MERCHANT / ORIGINATOR ── */
+  .persona-divider {
+    height: 16px;
+  }
+
+  /* ── INSIGHT BAR ── */
+  .insight-bar {
+    margin-top: 40px;
+    padding: 24px 32px;
+    background: #0a0e1a;
+    border: 1px solid var(--border-light);
+    border-radius: 2px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 32px;
+  }
+
+  .insight {
+    border-left: 2px solid var(--border-light);
+    padding-left: 20px;
+  }
+
+  .insight-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .insight-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .insight-text strong {
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* Column divider between current/mvp */
+  .col-divider {
+    width: 3px;
+    background: var(--bg);
+  }
+
+  /* Arrow between states - horizontal connector in header */
+  .state-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--muted);
+    padding: 0 8px;
+  }
+
+  .phase-bar {
+    display: grid;
+    grid-template-columns: 160px 1fr 1fr;
+    margin-bottom: 4px;
+    gap: 0;
+  }
+
+  .phase-spacer {}
+
+  .phase-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+  }
+
+  .phase-label.current-phase { color: #6b48c8; }
+  .phase-label.mvp-phase { color: #3a8fd4; }
+
+  .phase-line {
+    flex: 1;
+    height: 1px;
+    opacity: 0.3;
+  }
+
+  .current-phase .phase-line { background: #6b48c8; }
+  .mvp-phase .phase-line { background: #3a8fd4; }
+
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Pricing Tool — User Journey Map</h1>
+  <p>Current State vs. MVP · Working Draft · March 2026</p>
+</div>
+
+<!-- Phase label row -->
+<div class="phase-bar">
+  <div class="phase-spacer"></div>
+  <div class="phase-label current-phase">
+    Current State
+    <div class="phase-line"></div>
+  </div>
+  <div class="phase-label mvp-phase">
+    MVP
+    <div class="phase-line"></div>
+  </div>
+</div>
+
+<!-- ── MERCHANT ROW ── -->
+<div class="journey-block">
+  <div class="persona-label">
+    <div class="persona-name merchant">Merchant</div>
+    <div class="persona-desc">Sets pricing strategy. Owns position and targets.</div>
+  </div>
+
+  <!-- MERCHANT CURRENT -->
+  <div class="state-panel current-merchant">
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Review position & targets</div>
+          <div class="step-detail">Works from memory and experience. No structured view of current exposure.</div>
+          <span class="tag pain">No data layer</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Set basis, max, freight</div>
+          <div class="step-detail">Pricing decisions made on gut feel and market knowledge. No modeling or scenario comparison.</div>
+          <span class="tag pain">No audit trail</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Send spreadsheet to originator</div>
+          <div class="step-detail">POC users send manually built spreadsheets. No versioning, no confirmation of receipt.</div>
+          <span class="tag pain">Error-prone handoff</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Wait for feedback</div>
+          <div class="step-detail">No visibility into execution. Feedback arrives informally, slowly, or not at all.</div>
+          <span class="tag pain">Blind during execution</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">Adjust next week</div>
+          <div class="step-detail">No mid-week intervention possible. Learning is delayed a full cycle.</div>
+          <span class="tag pain">Slow feedback loop</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MERCHANT MVP -->
+  <div class="state-panel mvp-merchant">
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Open dashboard</div>
+          <div class="step-detail">Live view of active scenario performance on the map. Outcomes updating in real time.</div>
+          <span class="tag gain">Single source of truth</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Model scenario on map canvas</div>
+          <div class="step-detail">Adjust input variables. ML generates territory geometry and bid prices. Shape updates live.</div>
+          <span class="tag gain">ML-powered modeling</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Activate scenario</div>
+          <div class="step-detail">One action cascades to originator lead lists, Salesforce bid prices, and producer accounts.</div>
+          <span class="tag gain">Automated cascade</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Monitor live on dashboard</div>
+          <div class="step-detail">Closed leads, rejections, and reasons flow back in real time. Trend direction visible.</div>
+          <span class="tag gain">Full execution visibility</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">Revise mid-week if needed</div>
+          <div class="step-detail">Hit Revise, adjust variables, new scenario child created. Active leads updated, closed leads excluded automatically.</div>
+          <span class="tag gain">Mid-cycle intervention</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="persona-divider"></div>
+
+<!-- ── ORIGINATOR ROW ── -->
+<div class="journey-block">
+  <div class="persona-label">
+    <div class="persona-name originator">Originator</div>
+    <div class="persona-desc">Executes on pricing. Works leads inbound and outbound.</div>
+  </div>
+
+  <!-- ORIGINATOR CURRENT -->
+  <div class="state-panel current-originator">
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Receive spreadsheet (or not)</div>
+          <div class="step-detail">POC merchants send spreadsheets manually. Others work from Salesforce 12-week contact window queue with no targeted pricing context.</div>
+          <span class="tag pain">No targeted leads</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Work queue from memory</div>
+          <div class="step-detail">Originators rely on personal knowledge of who likely has what the merchant needs. No systematic prioritization.</div>
+          <span class="tag pain">Knowledge-dependent</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Make outbound calls</div>
+          <div class="step-detail">Bid price may be from a spreadsheet or recalled verbally. No in-context reference to current scenario.</div>
+          <span class="tag pain">Disconnected from pricing</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Log outcomes in Salesforce</div>
+          <div class="step-detail">Outcome logging is inconsistent. No structured reason capture. Merchant sees nothing in real time.</div>
+          <span class="tag pain">Inconsistent feedback</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">Inbound calls handled ad hoc</div>
+          <div class="step-detail">No structured process to reconcile inbound against outbound list. Duplication risk, no outcome logging standard.</div>
+          <span class="tag pain">No reconciliation</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORIGINATOR MVP -->
+  <div class="state-panel mvp-originator">
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Open lead list in tool</div>
+          <div class="step-detail">Active leads generated by the merchant's scenario. Targeted, priced, and ready. Each linked to producer's Salesforce account.</div>
+          <span class="tag gain">ML-targeted leads</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Work outbound with context</div>
+          <div class="step-detail">Bid price visible in tool. One click to open producer's Salesforce account. No switching between systems mid-call.</div>
+          <span class="tag gain">Integrated workflow</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Log outbound outcome in tool</div>
+          <div class="step-detail">Closed or declined. Lead removed from active list automatically. Outcome flows to merchant dashboard immediately.</div>
+          <span class="tag gain">Real-time reporting</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Handle inbound in Salesforce</div>
+          <div class="step-detail">Producer calls in. Originator logs bid price, outcome (yes/no), and reason in Salesforce producer account.</div>
+          <span class="tag gain">Structured capture</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">Inbound auto-reconciled</div>
+          <div class="step-detail">If lead exists on outbound list, tool updates and removes it automatically. No duplicate effort, no manual cleanup.</div>
+          <span class="tag gain">Auto-reconciliation</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── INSIGHT BAR ── -->
+<div class="insight-bar">
+  <div class="insight">
+    <div class="insight-label">Core Problem</div>
+    <div class="insight-text">Pricing lives in <strong>merchants' heads</strong>. Originators execute without targeted leads or real-time pricing context. The feedback loop takes a full week.</div>
+  </div>
+  <div class="insight">
+    <div class="insight-label">MVP Unlock</div>
+    <div class="insight-text">A <strong>live scenario</strong> connects merchant pricing decisions directly to originator workflows and surfaces outcomes back to the merchant in real time.</div>
+  </div>
+  <div class="insight">
+    <div class="insight-label">Strategic Value</div>
+    <div class="insight-text">Every outcome — accepted, declined, reason — feeds the <strong>ML model</strong>. The tool gets smarter with every scenario run.</div>
+  </div>
+</div>
+
+</body>
+</html>
