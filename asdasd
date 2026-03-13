@@ -1,0 +1,1169 @@
+@use "../mixins.scss" as *;
+@use "../variables.scss" as *;
+@use "../base.scss" as *;
+@use "../fonts.scss" as *;
+@use "../reset.scss" as *;
+
+:root {
+  /** line height **/
+  @include create-rem-vars($line-height-scale, "sprout-line-height");
+  /** spacing in rem **/
+  @include create-rem-vars($spacing-scale, "sprout-spacing");
+  /** border radius **/
+  @include create-rem-vars($border-radius-scale, "sprout-border-radius");
+  /** padding **/
+  @include create-rem-vars($padding-scale, "sprout-padding");
+  /** font-size **/
+  @include create-rem-vars($font-size-scale, "sprout-font-size");
+
+  /** Motion **/
+  --transition-interaction: 0.15s;
+  --transition-standard: 0.35s;
+  --transition-ripple: 0.75s;
+
+  --sprout-spacing: 4px;
+  --sprout-shape-borderRadius: 4px;
+  --sprout-shadows-0: none;
+  --sprout-shadows-1: 0px 4px 16px 0px rgba(0, 0, 0, 0.1);
+  --sprout-shadows-2: 0px 12px 24px 0px rgba(0, 0, 0, 0.1);
+  --sprout-shadows-3: 0px 12px 24px 0px rgba(0, 0, 0, 0.25);
+  --sprout-shadows-4: 0px 16px 32px 0px rgba(0, 0, 0, 0.25);
+  --sprout-shadows-5: 0 0 0 2px white;
+  --sprout-shadows-6: 0 0 0 2px rgba(0, 132, 61, 0.7);
+  --sprout-shadows-7: 0px 16px 32px 0px rgba(0, 0, 0, 0.45);
+  --sprout-shadows-8: 0px 16px 32px 0px rgba(0, 0, 0, 0.65);
+  --sprout-shadows-9: 0px 16px 32px 0px rgba(0, 0, 0, 0.85);
+  --sprout-zIndex-mobileStepper: 1000;
+  --sprout-zIndex-fab: 1050;
+  --sprout-zIndex-speedDial: 1050;
+  --sprout-zIndex-appBar: 1100;
+  --sprout-zIndex-drawer: 1200;
+  --sprout-zIndex-modal: 1300;
+  --sprout-zIndex-snackbar: 1400;
+  --sprout-zIndex-tooltip: 1500;
+  --sprout-custom-CargillLogo: /src/assets/foundations/cargill-logo-light.svg;
+  --sprout-custom-CargillLogoContrast: /src/assets/foundations/cargill-logo-dark.svg;
+
+  --sprout-font-sans-serif: HelveticaNowForCargill, Helvetica, sans-serif;
+  --sprout-font-serif: BigCaslonForCargill, serif;
+  --sprout-font-micro: HelveticaNowMicroForCargill, serif;
+  --sprout-font-weight-normal: 400;
+  --sprout-font-weight-bold: 700;
+
+  --sprout-font-h1: 400 3.5rem/4rem BigCaslonForCargill, serif;
+  --sprout-font-h2: 700 2rem/2.625rem BigCaslonForCargill, serif;
+  --sprout-font-h3: 700 1.75rem/2.25rem BigCaslonForCargill, serif;
+  --sprout-font-h4: 700 1.5rem/2rem HelveticaNowForCargill, Helvetica, sans-serif;
+  --sprout-font-h5: 700 1.25rem/1.625rem HelveticaNowForCargill, Helvetica, sans-serif;
+  --sprout-font-h6: 700 1.125rem/1.5rem HelveticaNowForCargill, Helvetica, sans-serif;
+  --sprout-font-subtitle1: 400 1.5rem/2rem HelveticaNowForCargill, Helvetica, sans-serif;
+  --sprout-font-subtitle2: 400 1.25rem/1.625rem HelveticaNowForCargill, Helvetica, sans-serif;
+  --sprout-font-body1: normal 400 1rem/1.5rem HelveticaNowForCargill, Helvetica, sans-serif;
+  --sprout-font-body2: normal 400 0.75rem/1.125rem HelveticaNowForCargill, Helvetica, sans-serif;
+  --sprout-font-button: normal 400 1rem/1.5rem HelveticaNowForCargill, Helvetica, sans-serif;
+  --sprout-font-caption: normal 400 0.625rem/0.875rem HelveticaNowForCargill, Helvetica, sans-serif;
+  --sprout-font-overline: normal 400 1.5rem/2rem HelveticaNowForCargill, Helvetica, sans-serif;
+  --sprout-font-body_xs: normal 400 0.625rem/0.875rem HelveticaNowForCargill, Helvetica, sans-serif;
+  --sprout-font-text_sm: normal 400 0.75rem/1.125rem HelveticaNowForCargill, Helvetica, sans-serif;
+  --sprout-font-link: normal 400 1rem/1.5rem HelveticaNowForCargill, Helvetica, sans-serif;
+
+  /* Primary Colors */
+  --sprout-color-white: #ffffff;
+  --sprout-color-brand-white: #ffffff;
+  --sprout-color-green-100: #f5f9ed;
+  --sprout-color-green-200: #bde588;
+  --sprout-color-green-300: #81ab40;
+  --sprout-color-green-400: #00843d;
+  --sprout-color-green-700: #01632d;
+  --sprout-color-green-800: #03441f;
+  --sprout-color-green-900: #012912;
+  --sprout-color-black: #000000;
+
+  /* Named Colors */
+  --sprout-color-soft-green: var(--sprout-color-green-200);
+  --sprout-color-leaf-green: var(--sprout-color-green-400);
+  --sprout-color-banner-green: var(--sprout-color-green-700);
+  --sprout-color-deep-green: var(--sprout-color-green-800);
+  --sprout-color-dark-green: var(--sprout-color-green-900);
+
+  /* Greens */
+  --sprout-palette-green-100: #f5f9ed;
+  --sprout-palette-green-200: #bde588;
+  --sprout-palette-green-300: #81ab40;
+  --sprout-palette-green-400: #00843d;
+  --sprout-palette-green-500: #00843d;
+  --sprout-palette-green-700: #01632d;
+  --sprout-palette-green-800: #03441f;
+  --sprout-palette-green-900: #012912;
+
+  /* Neutrals */
+  --sprout-color-neutral-100: #f3f4f3;
+  --sprout-color-neutral-200: #e7e8e8;
+  --sprout-color-neutral-300: #dbdddc;
+  --sprout-color-neutral-400: #9fa4a2;
+  --sprout-color-neutral-500: #707773;
+  --sprout-color-neutral-600: #58605c;
+  --sprout-color-neutral-700: #404945;
+  --sprout-color-neutral-800: #404945;
+  --sprout-color-neutral-900: #1c2722;
+  --sprout-color-neutral-1000: #101c16;
+
+  /* Grays */
+  --sprout-palette-gray-50: #fafafa;
+  --sprout-palette-gray-100: #f5f5f5;
+  --sprout-palette-gray-200: #eeeeee;
+  --sprout-palette-gray-300: #e0e0e0;
+  --sprout-palette-gray-400: #bdbdbd;
+  --sprout-palette-gray-500: #9e9e9e;
+  --sprout-palette-gray-600: #757575;
+  --sprout-palette-gray-700: #616161;
+  --sprout-palette-gray-800: #424242;
+  --sprout-palette-gray-900: #212121;
+  --sprout-palette-gray-A100: #f5f5f5;
+  --sprout-palette-gray-A200: #eeeeee;
+  --sprout-palette-gray-A400: #bdbdbd;
+  --sprout-palette-gray-A700: #616161;
+
+  /* Emphasis Colors */
+  --sprout-color-ruby-red-100: #eb5655;
+  --sprout-color-ruby-red-300: #c50f1f;
+  --sprout-color-ruby-red-500: #c50f1f;
+  --sprout-color-yolk-yellow-100: #fea800;
+  --sprout-color-sapphire-blue-100: #55a5eb;
+  --sprout-color-sapphire-blue-500: #0f49c5;
+
+  /* Secondary Colors */
+  --sprout-color-bright-yellow-100: #ffd77d;
+  --sprout-color-bright-yellow-500: #ffbc27;
+  --sprout-color-bright-yellow-700: #989a04;
+  --sprout-color-bright-yellow-800: #ef8455;
+  --sprout-color-bright-yellow-900: #ffd77d;
+  --sprout-color-midnight-blue-100: #99adc2;
+  --sprout-color-midnight-blue-400: #2d4e77;
+  --sprout-color-midnight-blue-500: #003266;
+  --sprout-color-midnight-blue-900: #001a33;
+  --sprout-color-rich-green-700: #006630;
+  --sprout-color-rich-red-100: #f7b9c0;
+  --sprout-color-rich-red-500: #ea5062;
+  --sprout-color-rich-red-600: #e01f1f;
+  --sprout-color-rich-red-700: #b00715;
+  --sprout-color-rich-red-800: #9e3a3c;
+  --sprout-color-rich-red-900: #9e2a2f;
+  --sprout-color-sky-blue-100: #bcedff;
+  --sprout-color-sky-blue-500: #57d1ff;
+  --sprout-color-sky-blue-700: #2666fd;
+  --sprout-color-sky-blue-800: #3c8394;
+  --sprout-color-sky-blue-900: #007681;
+  --sprout-color-vibrabt-purple-100: #c6c2ff;
+  --sprout-color-vibrant-purple-500: #7166ff;
+  --sprout-color-vibrant-purple-700: #4b45a5;
+  --sprout-color-vibrant-purple-900: #393380;
+
+  /** border colors **/
+  --border-interactive-error: var(--sprout-color-ruby-red-500);
+
+/**********************************/
+/*        design tokens dark      */
+/**********************************/
+:root {
+  [data-theme="dark"] {
+    -webkit-print-color-scheme: dark;
+    color-scheme: dark;
+    --sprout-palette-common-black: var(--sprout-color-black);
+    --sprout-palette-common-white: var(--sprout-color-white);
+    --sprout-palette-common-background: var(--sprout-color-black);
+    --sprout-palette-common-onBackground: var(--sprout-color-white);
+    --sprout-palette-common-backgroundChannel: 0 0 0;
+    --sprout-palette-common-onBackgroundChannel: 255 255 255;
+
+    --sprout-palette-primary-main: var(--sprout-color-green-200);
+    --sprout-palette-primary-dark: var(--sprout-color-green-300);
+    --sprout-palette-primary-light: var(--sprout-color-green-200);
+    --sprout-palette-primary-contrastText: var(--sprout-color-neutral-1000);
+    --sprout-palette-primary-mainChannel: 189 229 136;
+    --sprout-palette-primary-lightChannel: 189 229 136;
+    --sprout-palette-primary-darkChannel: 129 171 64;
+    --sprout-palette-primary-contrastTextChannel: 16 28 22;
+
+    --sprout-palette-secondary-main: var(--sprout-color-green-400);
+    --sprout-palette-secondary-dark: var(--sprout-color-green-700);
+    --sprout-palette-secondary-light: var(--sprout-color-green-400);
+    --sprout-palette-secondary-contrastText: var(--sprout-color-white);
+    --sprout-palette-secondary-mainChannel: 0 132 61;
+    --sprout-palette-secondary-lightChannel: 0 132 61;
+    --sprout-palette-secondary-darkChannel: 1 99 45;
+    --sprout-palette-secondary-contrastTextChannel: 255 255 255;
+
+    --sprout-palette-error-main: var(--sprout-color-ruby-red-500);
+    --sprout-palette-error-light: var(--sprout-color-ruby-red-100);
+    --sprout-palette-error-dark: var(--sprout-color-ruby-red-500);
+    --sprout-palette-error-contrastText: var(--sprout-color-white);
+    --sprout-palette-error-mainChannel: 244 67 54;
+    --sprout-palette-error-lightChannel: 229 115 115;
+    --sprout-palette-error-darkChannel: 211 47 47;
+    --sprout-palette-error-contrastTextChannel: 255 255 255;
+
+    --sprout-palette-warning-main: var(--sprout-color-ruby-red-500);
+    --sprout-palette-warning-light: var(--sprout-color-ruby-red-100);
+    --sprout-palette-warning-dark: var(--sprout-color-ruby-red-500);
+    --sprout-palette-warning-contrastText: var(--sprout-color-white);
+    --sprout-palette-warning-mainChannel: 197 15 31;
+    --sprout-palette-warning-lightChannel: 197 15 31;
+    --sprout-palette-warning-darkChannel: 235 86 85;
+    --sprout-palette-warning-contrastTextChannel: 255 255 255;
+
+    --sprout-palette-info-main: #29b6f6;
+    --sprout-palette-info-light: #4fc3f7;
+    --sprout-palette-info-dark: #0288d1;
+    --sprout-palette-info-contrastText: rgba(0, 0, 0, 0.87);
+    --sprout-palette-info-mainChannel: 41 182 246;
+    --sprout-palette-info-lightChannel: 79 195 247;
+    --sprout-palette-info-darkChannel: 2 136 209;
+    --sprout-palette-info-contrastTextChannel: 0 0 0;
+
+    --sprout-palette-success-main: #66bb6a;
+    --sprout-palette-success-light: #81c784;
+    --sprout-palette-success-dark: #388e3c;
+    --sprout-palette-success-contrastText: rgba(0, 0, 0, 0.87);
+    --sprout-palette-success-mainChannel: 102 187 106;
+    --sprout-palette-success-lightChannel: 129 199 132;
+    --sprout-palette-success-darkChannel: 56 142 60;
+    --sprout-palette-success-contrastTextChannel: 0 0 0;
+
+    --sprout-palette-text-primary: var(--sprout-color-white);
+    --sprout-palette-text-secondary: var(--sprout-color-neutral-400);
+    --sprout-palette-text-disabled: var(--sprout-color-neutral-500);
+    --sprout-palette-text-primaryHover: var(--sprout-color-neutral-300);
+    --sprout-palette-text-secondaryHover: var(--sprout-color-neutral-500);
+    --sprout-palette-text-selected: var(--sprout-color-green-100);
+    --sprout-palette-text-interactive: var(--sprout-color-green-200);
+    --sprout-palette-text-interactiveHover: var(--sprout-color-green-300);
+    --sprout-palette-text-visited: var(--sprout-color-green-300);
+    --sprout-palette-text-header: var(--sprout-color-green-200);
+    --sprout-palette-text-heading: var(--sprout-color-green-200); /* alias for header */
+    --sprout-palette-text-subheading: var(--sprout-color-green-100);
+    --sprout-palette-text-alert: var(--sprout-color-ruby-red-500);
+    --sprout-palette-text-inverse: var(--sprout-color-neutral-1000);
+    --sprout-palette-text-light: var(--sprout-color-white);
+    --sprout-palette-text-dark: var(--sprout-color-neutral-1000);
+    --sprout-palette-text-primaryChannel: 255 255 255;
+    --sprout-palette-text-secondaryChannel: 112 119 115; /* neutral-400 approx */
+    --sprout-palette-text-lightChannel: 255 255 255;
+    --sprout-palette-text-darkChannel: 16 28 22;
+
+    --sprout-palette-divider: var(--sprout-color-neutral-300);
+
+    /* Background tokens (align names with light theme) */
+    --sprout-palette-background-paper: var(--sprout-color-neutral-900);
+    --sprout-palette-background-default: var(--sprout-color-neutral-900);
+    --sprout-palette-background-page: var(--sprout-color-neutral-900);
+    --sprout-palette-background-surface: var(--sprout-color-neutral-1000);
+    --sprout-palette-background-surfaceHover: var(--sprout-color-neutral-900);
+    --sprout-palette-background-surfacePressed: var(--sprout-color-neutral-700);
+    --sprout-palette-background-surfaceSelected: var(--sprout-color-leaf-green);
+    --sprout-palette-background-surfaceDisabled: var(--sprout-color-neutral-900);
+    --sprout-palette-background-interactive: var(--sprout-color-green-200);
+    --sprout-palette-background-interactiveHover: var(--sprout-color-green-300);
+    --sprout-palette-background-interactiveDisabled: var(--sprout-color-neutral-100);
+    --sprout-palette-background-interactiveInactive: var(--sprout-color-green-300);
+    --sprout-palette-background-alert: var(--sprout-color-ruby-red-100);
+    --sprout-palette-background-alertHover: var(--sprout-color-ruby-red-100);
+    --sprout-palette-background-alertPressed: var(--sprout-color-ruby-red-500);
+    --sprout-palette-background-skeleton: var(--sprout-color-neutral-800);
+    --sprout-palette-background-skeletonHighlight: var(--sprout-color-neutral-700);
+    --sprout-palette-background-light: var(--sprout-color-white);
+    --sprout-palette-background-paperChannel: 0 0 0; /* neutral-900 approx */
+    --sprout-palette-background-defaultChannel: 0 0 0; /* background in dark */
+    --sprout-palette-background-lightChannel: 255 255 255;
+
+    --sprout-palette-border-primary: var(--sprout-color-neutral-700);
+    --sprout-palette-border-primaryHover: var(--sprout-color-leaf-green);
+    --sprout-palette-border-secondary: var(--sprout-color-neutral-800);
+    --sprout-palette-border-secondaryHover: var(--sprout-color-neutral-700);
+    --sprout-palette-border-interactive: var(--sprout-color-green-200);
+    --sprout-palette-border-interactiveHover: var(--sprout-color-green-300);
+    --sprout-palette-border-disabled: var(--sprout-color-neutral-800);
+    --sprout-palette-border-alert: var(--sprout-color-ruby-red-100);
+    --sprout-palette-border-input: var(--sprout-color-neutral-500);
+    --sprout-palette-border-inverse: var(--sprout-color-neutral-1000);
+    --sprout-palette-border-light: var(--sprout-color-white);
+    --sprout-palette-border-dark: var(--sprout-color-neutral-1000);
+    --sprout-palette-border-lightChannel: 255 255 255;
+    --sprout-palette-border-darkChannel: 16 28 22; /* approx text dark channel */
+
+    --sprout-palette-icon-main: var(--sprout-color-neutral-300);
+    --sprout-palette-icon-inverse: var(--sprout-color-green-900);
+    --sprout-palette-icon-brand: var(--sprout-color-green-200);
+    --sprout-palette-icon-secondary: var(--sprout-color-neutral-400);
+    --sprout-palette-icon-active: var(--sprout-color-white);
+    --sprout-palette-icon-disabled: var(--sprout-color-neutral-500);
+    --sprout-palette-icon-light: var(--sprout-color-white);
+    --sprout-palette-icon-mainChannel: 64 73 69; /* neutral approx */
+    --sprout-palette-icon-lightChannel: 255 255 255;
+
+    --sprout-palette-emphasis-surface: var(--sprout-color-neutral-800);
+    --sprout-palette-emphasis-positive: var(--sprout-color-leaf-green);
+    --sprout-palette-emphasis-negative: var(--sprout-color-ruby-red-100);
+    --sprout-palette-emphasis-info: var(--sprout-color-sapphire-blue-500);
+    --sprout-palette-emphasis-warning: var(--sprout-color-yolk-yellow-100);
+    --sprout-palette-emphasis-announcement: var(--sprout-color-neutral-300);
+    --sprout-palette-emphasis-skeleton: var(--sprout-color-neutral-200);
+
+    --sprout-palette-nav-primarySurface: var(--sprout-color-neutral-1000);
+    --sprout-palette-nav-secondarySurface: var(--sprout-color-green-800);
+    --sprout-palette-nav-primaryHover: var(--sprout-color-neutral-700);
+    --sprout-palette-nav-primarySelected: var(--sprout-color-neutral-700);
+    --sprout-palette-nav-secondaryHover: var(--sprout-color-green-700);
+    --sprout-palette-nav-secondarySelected: var(--sprout-color-green-900);
+  }
+}
+/**********************************/
+/*       design tokens light      */
+/**********************************/
+
+:root,
+[data-theme="light"] {
+  -webkit-print-color-scheme: light;
+  color-scheme: light;
+  --sprout-palette-common-black: var(--sprout-color-black);
+  --sprout-palette-common-white: var(--sprout-color-white);
+  --sprout-palette-common-background: var(--sprout-color-white);
+  --sprout-palette-common-onBackground: var(--sprout-color-black);
+  --sprout-palette-common-backgroundChannel: 255 255 255;
+  --sprout-palette-common-onBackgroundChannel: 0 0 0;
+
+  --sprout-palette-primary-main: var(--sprout-color-green-400);
+  --sprout-palette-primary-light: var(--sprout-color-green-200);
+  --sprout-palette-primary-dark: var(--sprout-color-green-900);
+  --sprout-palette-primary-contrastText: var(--sprout-color-white);
+  --sprout-palette-primary-mainChannel: 0 132 61;
+  --sprout-palette-primary-lightChannel: 189 229 136;
+  --sprout-palette-primary-darkChannel: 1 41 18;
+  --sprout-palette-primary-contrastTextChannel: 255 255 255;
+
+  --sprout-palette-secondary-main: var(--sprout-color-green-400);
+  --sprout-palette-secondary-light: var(--sprout-color-green-400);
+  --sprout-palette-secondary-dark: var(--sprout-color-green-700);
+  --sprout-palette-secondary-contrastText: var(--sprout-color-white);
+  --sprout-palette-secondary-mainChannel: 0 132 61;
+  --sprout-palette-secondary-lightChannel: 0 132 61;
+  --sprout-palette-secondary-darkChannel: 1 99 45;
+  --sprout-palette-secondary-contrastTextChannel: 255 255 255;
+
+  --sprout-palette-error-main: var(--sprout-color-ruby-red-500);
+  --sprout-palette-error-light: var(--sprout-color-ruby-red-100);
+  --sprout-palette-error-dark: var(--sprout-color-ruby-red-500);
+  --sprout-palette-error-contrastText: var(--sprout-color-white);
+  --sprout-palette-error-mainChannel: 197 15 31;
+  --sprout-palette-error-lightChannel: 235 86 85;
+  --sprout-palette-error-darkChannel: 197 15 31;
+  --sprout-palette-error-contrastTextChannel: 255 255 255;
+
+  /* Warning should use ruby-red set (aligns with original hex) */
+  --sprout-palette-warning-main: var(--sprout-color-ruby-red-500);
+  --sprout-palette-warning-light: var(--sprout-color-ruby-red-100);
+  --sprout-palette-warning-dark: var(--sprout-color-ruby-red-500);
+  --sprout-palette-warning-contrastText: var(--sprout-color-white);
+  --sprout-palette-warning-mainChannel: 197 15 31;
+  --sprout-palette-warning-lightChannel: 197 15 31;
+  --sprout-palette-warning-darkChannel: 235 86 85;
+  --sprout-palette-warning-contrastTextChannel: 255 255 255;
+
+  --sprout-palette-info-main: var(--sprout-color-neutral-700);
+  --sprout-palette-info-light: var(--sprout-color-neutral-900);
+  --sprout-palette-info-dark: var(--sprout-color-neutral-600);
+  --sprout-palette-info-contrastText: var(--sprout-color-white);
+  --sprout-palette-info-mainChannel: 64 73 69;
+  --sprout-palette-info-lightChannel: 28 39 34;
+  --sprout-palette-info-darkChannel: 88 96 92;
+  --sprout-palette-info-contrastTextChannel: 255 255 255;
+
+  --sprout-palette-success-main: var(--sprout-color-green-400);
+  --sprout-palette-success-light: var(--sprout-color-green-400);
+  --sprout-palette-success-dark: var(--sprout-color-green-400);
+  --sprout-palette-success-contrastText: var(--sprout-color-white);
+  --sprout-palette-success-mainChannel: 0 132 61;
+  --sprout-palette-success-lightChannel: 0 132 61;
+  --sprout-palette-success-darkChannel: 0 132 61;
+  --sprout-palette-success-contrastTextChannel: 255 255 255;
+
+  --sprout-palette-text-primary: var(--sprout-color-neutral-1000);
+  --sprout-palette-text-secondary: var(--sprout-color-neutral-500);
+  --sprout-palette-text-disabled: var(--sprout-color-neutral-400);
+  --sprout-palette-text-primaryHover: var(--sprout-color-neutral-700);
+  --sprout-palette-text-secondaryHover: var(--sprout-color-neutral-300);
+  --sprout-palette-text-selected: var(--sprout-color-green-400);
+  --sprout-palette-text-interactive: var(--sprout-color-green-400);
+  --sprout-palette-text-interactiveHover: var(--sprout-color-green-800);
+  --sprout-palette-text-visited: var(--sprout-color-green-700);
+  --sprout-palette-text-heading: var(--sprout-color-green-400);
+  --sprout-palette-text-subheading: var(--sprout-color-green-900);
+  --sprout-palette-text-alert: var(--sprout-color-ruby-red-500);
+  --sprout-palette-text-inverse: var(--sprout-color-white);
+  --sprout-palette-text-light: var(--sprout-color-white);
+  --sprout-palette-text-dark: var(--sprout-color-neutral-1000);
+  --sprout-palette-text-lightChannel: 255 255 255;
+  --sprout-palette-text-darkChannel: 16 28 22;
+  --sprout-palette-text-primaryChannel: 16 28 22;
+  --sprout-palette-text-secondaryChannel: 112 119 115;
+
+  --sprout-palette-divider: var(--sprout-color-neutral-300);
+
+  --sprout-palette-background-paper: var(--sprout-color-white);
+  --sprout-palette-background-default: var(--sprout-color-green-100);
+  --sprout-palette-background-page: var(--sprout-color-green-100);
+  --sprout-palette-background-surface: var(--sprout-color-white);
+  --sprout-palette-background-surfaceHover: var(--sprout-color-neutral-100);
+  --sprout-palette-background-surfacePressed: var(--sprout-color-neutral-300);
+  --sprout-palette-background-surfaceSelected: var(--sprout-color-green-400);
+  --sprout-palette-background-surfaceDisabled: var(--sprout-color-neutral-100);
+  --sprout-palette-background-interactive: var(--sprout-color-green-400);
+  --sprout-palette-background-interactiveHover: var(--sprout-color-green-800);
+  --sprout-palette-background-interactiveDisabled: var(--sprout-color-neutral-100);
+  --sprout-palette-background-interactiveInactive: var(--sprout-color-green-200);
+  --sprout-palette-background-alert: var(--sprout-color-ruby-red-500);
+  --sprout-palette-background-alertHover: var(--sprout-color-ruby-red-100);
+  --sprout-palette-background-alertPressed: var(--sprout-color-ruby-red-500);
+  --sprout-palette-background-skeleton: var(--sprout-color-neutral-100);
+  --sprout-palette-background-skeletonHighlight: var(--sprout-color-neutral-300);
+  --sprout-palette-background-light: var(--sprout-color-white);
+  --sprout-palette-background-defaultChannel: 245 249 237;
+  --sprout-palette-background-paperChannel: 255 255 255;
+  --sprout-palette-background-lightChannel: 255 255 255;
+
+  --sprout-palette-border-primary: var(--sprout-color-neutral-300);
+  --sprout-palette-border-primaryHover: var(--sprout-color-green-400);
+  --sprout-palette-border-secondary: var(--sprout-color-neutral-200);
+  --sprout-palette-border-secondaryHover: var(--sprout-color-neutral-400);
+  --sprout-palette-border-interactive: var(--sprout-color-green-400);
+  --sprout-palette-border-interactiveHover: var(--sprout-color-green-800);
+  --sprout-palette-border-disabled: var(--sprout-color-neutral-200);
+  --sprout-palette-border-alert: var(--sprout-color-ruby-red-500);
+  --sprout-palette-border-input: var(--sprout-color-neutral-400);
+  --sprout-palette-border-light: var(--sprout-color-white);
+  --sprout-palette-border-inverse: var(--sprout-color-white);
+  --sprout-palette-border-dark: var(--sprout-color-neutral-1000);
+  --sprout-palette-border-lightChannel: 255 255 255;
+  --sprout-palette-border-darkChannel: 16 28 22;
+
+  --sprout-palette-icon-main: var(--sprout-color-neutral-700);
+  --sprout-palette-icon-brand: var(--sprout-color-green-400);
+  --sprout-palette-icon-secondary: var(--sprout-color-neutral-500);
+  --sprout-palette-icon-active: var(--sprout-color-green-900);
+  --sprout-palette-icon-disabled: var(--sprout-color-neutral-400);
+  --sprout-palette-icon-light: var(--sprout-color-white);
+  --sprout-palette-icon-inverse: var(--sprout-color-white);
+  --sprout-palette-icon-mainChannel: 64 73 69;
+  --sprout-palette-icon-lightChannel: 255 255 255;
+
+  --sprout-palette-emphasis-surface: var(--sprout-color-white);
+  --sprout-palette-emphasis-positive: var(--sprout-color-green-400);
+  --sprout-palette-emphasis-negative: var(--sprout-color-ruby-red-500);
+  --sprout-palette-emphasis-info: var(--sprout-color-sapphire-blue-500);
+  --sprout-palette-emphasis-warning: var(--sprout-color-yolk-yellow-100);
+  --sprout-palette-emphasis-announcement: var(--sprout-color-neutral-700);
+  --sprout-palette-emphasis-skeleton: var(--sprout-color-neutral-200);
+
+  --sprout-palette-expression-root: var(--sprout-color-green-400);
+  --sprout-palette-expression-root-text: var(--sprout-color-white);
+  --sprout-palette-expression-inverse: var(--sprout-color-white);
+  --sprout-palette-expression-inverse-text: var(--sprout-color-green-400);
+  --sprout-palette-expression-surface: var(--sprout-palette-background-surface);
+  --sprout-palette-expression-surface-text: var(--sprout-palette-text-header);
+
+  --sprout-palette-nav-primarySurface: var(--sprout-color-white);
+  --sprout-palette-nav-secondarySurface: var(--sprout-color-green-400);
+  --sprout-palette-nav-primaryHover: var(--sprout-color-neutral-100);
+  --sprout-palette-nav-primarySelected: var(--sprout-color-neutral-100);
+  --sprout-palette-nav-secondaryHover: var(--sprout-color-green-700);
+  --sprout-palette-nav-secondarySelected: var(--sprout-color-green-800);
+}
+/**********************************/
+/*             padding              */
+/**********************************/
+
+/* Utility Classes for Padding */
+.p-0 {
+  padding: 0 !important;
+}
+
+.pl-0 {
+  padding-left: 0 !important;
+}
+
+.pr-0 {
+  padding-right: 0 !important;
+}
+
+.pt-0 {
+  padding-top: 0 !important;
+}
+
+.pb-0 {
+  padding-bottom: 0 !important;
+}
+
+.px-0 {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.py-0 {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.p-xs {
+  padding: var(--sprout-padding-xs) !important;
+}
+
+.pl-xs {
+  padding-left: var(--sprout-padding-xs) !important;
+}
+
+.pr-xs {
+  padding-right: var(--sprout-padding-xs) !important;
+}
+
+.pt-xs {
+  padding-top: var(--sprout-padding-xs) !important;
+}
+
+.pb-xs {
+  padding-bottom: var(--sprout-padding-xs) !important;
+}
+
+.px-xs {
+  padding-left: var(--sprout-padding-xs) !important;
+  padding-right: var(--sprout-padding-xs) !important;
+}
+
+.py-xs {
+  padding-top: var(--sprout-padding-xs) !important;
+  padding-bottom: var(--sprout-padding-xs) !important;
+}
+
+.p-sm {
+  padding: var(--sprout-padding-sm) !important;
+}
+
+.pl-sm {
+  padding-left: var(--sprout-padding-sm) !important;
+}
+
+.pr-sm {
+  padding-right: var(--sprout-padding-sm) !important;
+}
+
+.pt-sm {
+  padding-top: var(--sprout-padding-sm) !important;
+}
+
+.pb-sm {
+  padding-bottom: var(--sprout-padding-sm) !important;
+}
+
+.px-sm {
+  padding-left: var(--sprout-padding-sm) !important;
+  padding-right: var(--sprout-padding-sm) !important;
+}
+
+.py-sm {
+  padding-top: var(--sprout-padding-sm) !important;
+  padding-bottom: var(--sprout-padding-sm) !important;
+}
+
+.p-base {
+  padding: var(--sprout-padding-base) !important;
+}
+
+.pl-base {
+  padding-left: var(--sprout-padding-base) !important;
+}
+
+.pr-base {
+  padding-right: var(--sprout-padding-base) !important;
+}
+
+.pt-base {
+  padding-top: var(--sprout-padding-base) !important;
+}
+
+.pb-base {
+  padding-bottom: var(--sprout-padding-base) !important;
+}
+
+.px-base {
+  padding-left: var(--sprout-padding-base) !important;
+  padding-right: var(--sprout-padding-base) !important;
+}
+
+.py-base {
+  padding-top: var(--sprout-padding-base) !important;
+  padding-bottom: var(--sprout-padding-base) !important;
+}
+
+.p-md {
+  padding: var(--sprout-padding-md) !important;
+}
+
+.pl-md {
+  padding-left: var(--sprout-padding-md) !important;
+}
+
+.pr-md {
+  padding-right: var(--sprout-padding-md) !important;
+}
+
+.pt-md {
+  padding-top: var(--sprout-padding-md) !important;
+}
+
+.pb-md {
+  padding-bottom: var(--sprout-padding-md) !important;
+}
+
+.px-md {
+  padding-left: var(--sprout-padding-md) !important;
+  padding-right: var(--sprout-padding-md) !important;
+}
+
+.py-md {
+  padding-top: var(--sprout-padding-md) !important;
+  padding-bottom: var(--sprout-padding-md) !important;
+}
+
+.p-lg {
+  padding: var(--sprout-padding-lg) !important;
+}
+
+.pl-lg {
+  padding-left: var(--sprout-padding-lg) !important;
+}
+
+.pr-lg {
+  padding-right: var(--sprout-padding-lg) !important;
+}
+
+.pt-lg {
+  padding-top: var(--sprout-padding-lg) !important;
+}
+
+.pb-lg {
+  padding-bottom: var(--sprout-padding-lg) !important;
+}
+
+.px-lg {
+  padding-left: var(--sprout-padding-lg) !important;
+  padding-right: var(--sprout-padding-lg) !important;
+}
+
+.py-lg {
+  padding-top: var(--sprout-padding-lg) !important;
+  padding-bottom: var(--sprout-padding-lg) !important;
+}
+
+.p-xl {
+  padding: var(--sprout-padding-xl) !important;
+}
+
+.pl-xl {
+  padding-left: var(--sprout-padding-xl) !important;
+}
+
+.pr-xl {
+  padding-right: var(--sprout-padding-xl) !important;
+}
+
+.pt-xl {
+  padding-top: var(--sprout-padding-xl) !important;
+}
+
+.pb-xl {
+  padding-bottom: var(--sprout-padding-xl) !important;
+}
+
+.px-xl {
+  padding-left: var(--sprout-padding-xl) !important;
+  padding-right: var(--sprout-padding-xl) !important;
+}
+
+.py-xl {
+  padding-top: var(--sprout-padding-xl) !important;
+  padding-bottom: var(--sprout-padding-xl) !important;
+}
+
+.p-2xl {
+  padding: var(--sprout-padding-2xl) !important;
+}
+
+.pl-2xl {
+  padding-left: var(--sprout-padding-2xl) !important;
+}
+
+.pr-2xl {
+  padding-right: var(--sprout-padding-2xl) !important;
+}
+
+.pt-2xl {
+  padding-top: var(--sprout-padding-2xl) !important;
+}
+
+.pb-2xl {
+  padding-bottom: var(--sprout-padding-2xl) !important;
+}
+
+.px-2xl {
+  padding-left: var(--sprout-padding-2xl) !important;
+  padding-right: var(--sprout-padding-2xl) !important;
+}
+
+.py-2xl {
+  padding-top: var(--sprout-padding-2xl) !important;
+  padding-bottom: var(--sprout-padding-2xl) !important;
+}
+
+.p-3xl {
+  padding: var(--sprout-padding-3xl) !important;
+}
+
+.pl-3xl {
+  padding-left: var(--sprout-padding-3xl) !important;
+}
+
+.pr-3xl {
+  padding-right: var(--sprout-padding-3xl) !important;
+}
+
+.pt-3xl {
+  padding-top: var(--sprout-padding-3xl) !important;
+}
+
+.pb-3xl {
+  padding-bottom: var(--sprout-padding-3xl) !important;
+}
+
+.px-3xl {
+  padding-left: var(--sprout-padding-3xl) !important;
+  padding-right: var(--sprout-padding-3xl) !important;
+}
+
+.py-3xl {
+  padding-top: var(--sprout-padding-3xl) !important;
+  padding-bottom: var(--sprout-padding-3xl) !important;
+}
+
+.p-4xl {
+  padding: var(--sprout-padding-4xl) !important;
+}
+
+.pl-4xl {
+  padding-left: var(--sprout-padding-4xl) !important;
+}
+
+.pr-4xl {
+  padding-right: var(--sprout-padding-4xl) !important;
+}
+
+.pt-4xl {
+  padding-top: var(--sprout-padding-4xl) !important;
+}
+
+.pb-4xl {
+  padding-bottom: var(--sprout-padding-4xl) !important;
+}
+
+.px-4xl {
+  padding-left: var(--sprout-padding-4xl) !important;
+  padding-right: var(--sprout-padding-4xl) !important;
+}
+
+.py-4xl {
+  padding-top: var(--sprout-padding-4xl) !important;
+  padding-bottom: var(--sprout-padding-4xl) !important;
+}
+
+.p-5xl {
+  padding: var(--sprout-padding-5xl) !important;
+}
+
+.pl-5xl {
+  padding-left: var(--sprout-padding-5xl) !important;
+}
+
+.pr-5xl {
+  padding-right: var(--sprout-padding-5xl) !important;
+}
+
+.pt-5xl {
+  padding-top: var(--sprout-padding-5xl) !important;
+}
+
+.pb-5xl {
+  padding-bottom: var(--sprout-padding-5xl) !important;
+}
+
+.px-5xl {
+  padding-left: var(--sprout-padding-5xl) !important;
+  padding-right: var(--sprout-padding-5xl) !important;
+}
+
+.py-5xl {
+  padding-top: var(--sprout-padding-5xl) !important;
+  padding-bottom: var(--sprout-padding-5xl) !important;
+}
+
+.p-6xl {
+  padding: var(--sprout-padding-6xl) !important;
+}
+
+.pl-6xl {
+  padding-left: var(--sprout-padding-6xl) !important;
+}
+
+.pr-6xl {
+  padding-right: var(--sprout-padding-6xl) !important;
+}
+
+.pt-6xl {
+  padding-top: var(--sprout-padding-6xl) !important;
+}
+
+.pb-6xl {
+  padding-bottom: var(--sprout-padding-6xl) !important;
+}
+
+.px-6xl {
+  padding-left: var(--sprout-padding-6xl) !important;
+  padding-right: var(--sprout-padding-6xl) !important;
+}
+
+.py-6xl {
+  padding-top: var(--sprout-padding-6xl) !important;
+  padding-bottom: var(--sprout-padding-6xl) !important;
+}
+/**********************************/
+/*             spacing              */
+/**********************************/
+
+.m-0 {
+  margin: 0;
+}
+
+.ml-0 {
+  margin-left: 0;
+}
+
+.mr-0 {
+  margin-right: 0;
+}
+
+.mt-0 {
+  margin-top: 0;
+}
+
+.mb-0 {
+  margin-bottom: 0;
+}
+
+.m-sm {
+  margin: var(--sprout-spacing-sm);
+}
+
+.ml-sm {
+  margin-left: var(--sprout-spacing-sm);
+}
+
+.mr-sm {
+  margin-right: var(--sprout-spacing-sm);
+}
+
+.mt-sm {
+  margin-top: var(--sprout-spacing-sm);
+}
+
+.mb-sm {
+  margin-bottom: var(--sprout-spacing-sm);
+}
+
+.mx-sm {
+  margin-left: var(--sprout-spacing-sm);
+  margin-right: var(--sprout-spacing-sm);
+}
+
+.my-sm {
+  margin-top: var(--sprout-spacing-sm);
+  margin-bottom: var(--sprout-spacing-sm);
+}
+
+.m-base {
+  margin: var(--sprout-spacing-base);
+}
+
+.ml-base {
+  margin-left: var(--sprout-spacing-base);
+}
+
+.mr-base {
+  margin-right: var(--sprout-spacing-base);
+}
+
+.mt-base {
+  margin-top: var(--sprout-spacing-base);
+}
+
+.mb-base {
+  margin-bottom: var(--sprout-spacing-base);
+}
+
+.mx-base {
+  margin-left: var(--sprout-spacing-base);
+  margin-right: var(--sprout-spacing-base);
+}
+
+.my-base {
+  margin-top: var(--sprout-spacing-base);
+  margin-bottom: var(--sprout-spacing-base);
+}
+
+.m-md {
+  margin: var(--sprout-spacing-md);
+}
+
+.ml-md {
+  margin-left: var(--sprout-spacing-md);
+}
+
+.mr-md {
+  margin-right: var(--sprout-spacing-md);
+}
+
+.mt-md {
+  margin-top: var(--sprout-spacing-md);
+}
+
+.mb-md {
+  margin-bottom: var(--sprout-spacing-md);
+}
+
+.mx-md {
+  margin-left: var(--sprout-spacing-md);
+  margin-right: var(--sprout-spacing-md);
+}
+
+.my-md {
+  margin-top: var(--sprout-spacing-md);
+  margin-bottom: var(--sprout-spacing-md);
+}
+
+.m-lg {
+  margin: var(--sprout-spacing-lg);
+}
+
+.ml-lg {
+  margin-left: var(--sprout-spacing-lg);
+}
+
+.mr-lg {
+  margin-right: var(--sprout-spacing-lg);
+}
+
+.mt-lg {
+  margin-top: var(--sprout-spacing-lg);
+}
+
+.mb-lg {
+  margin-bottom: var(--sprout-spacing-lg);
+}
+
+.mx-lg {
+  margin-left: var(--sprout-spacing-lg);
+  margin-right: var(--sprout-spacing-lg);
+}
+
+.my-lg {
+  margin-top: var(--sprout-spacing-lg);
+  margin-bottom: var(--sprout-spacing-lg);
+}
+
+.m-xl {
+  margin: var(--sprout-spacing-xl);
+}
+
+.ml-xl {
+  margin-left: var(--sprout-spacing-xl);
+}
+
+.mr-xl {
+  margin-right: var(--sprout-spacing-xl);
+}
+
+.mt-xl {
+  margin-top: var(--sprout-spacing-xl);
+}
+
+.mb-xl {
+  margin-bottom: var(--sprout-spacing-xl);
+}
+
+.mx-xl {
+  margin-left: var(--sprout-spacing-xl);
+  margin-right: var(--sprout-spacing-xl);
+}
+
+.my-xl {
+  margin-top: var(--sprout-spacing-xl);
+  margin-bottom: var(--sprout-spacing-xl);
+}
+
+.m-2xl {
+  margin: var(--sprout-spacing-2xl);
+}
+
+.ml-2xl {
+  margin-left: var(--sprout-spacing-2xl);
+}
+
+.mr-2xl {
+  margin-right: var(--sprout-spacing-2xl);
+}
+
+.mt-2xl {
+  margin-top: var(--sprout-spacing-2xl);
+}
+
+.mb-2xl {
+  margin-bottom: var(--sprout-spacing-2xl);
+}
+
+.mx-2xl {
+  margin-left: var(--sprout-spacing-2xl);
+  margin-right: var(--sprout-spacing-2xl);
+}
+
+.my-2xl {
+  margin-top: var(--sprout-spacing-2xl);
+  margin-bottom: var(--sprout-spacing-2xl);
+}
+
+.m-3xl {
+  margin: var(--sprout-spacing-3xl);
+}
+
+.ml-3xl {
+  margin-left: var(--sprout-spacing-3xl);
+}
+
+.mr-3xl {
+  margin-right: var(--sprout-spacing-3xl);
+}
+
+.mt-3xl {
+  margin-top: var(--sprout-spacing-3xl);
+}
+
+.mb-3xl {
+  margin-bottom: var(--sprout-spacing-3xl);
+}
+
+.mx-3xl {
+  margin-left: var(--sprout-spacing-3xl);
+  margin-right: var(--sprout-spacing-3xl);
+}
+
+.my-3xl {
+  margin-top: var(--sprout-spacing-3xl);
+  margin-bottom: var(--sprout-spacing-3xl);
+}
+
+.m-4xl {
+  margin: var(--sprout-spacing-4xl);
+}
+
+.ml-4xl {
+  margin-left: var(--sprout-spacing-4xl);
+}
+
+.mr-4xl {
+  margin-right: var(--sprout-spacing-4xl);
+}
+
+.mt-4xl {
+  margin-top: var(--sprout-spacing-4xl);
+}
+
+.mb-4xl {
+  margin-bottom: var(--sprout-spacing-4xl);
+}
+
+.mx-4xl {
+  margin-left: var(--sprout-spacing-4xl);
+  margin-right: var(--sprout-spacing-4xl);
+}
+
+.my-4xl {
+  margin-top: var(--sprout-spacing-4xl);
+  margin-bottom: var(--sprout-spacing-4xl);
+}
+
+.m-5xl {
+  margin: var(--sprout-spacing-5xl);
+}
+
+.ml-5xl {
+  margin-left: var(--sprout-spacing-5xl);
+}
+
+.mr-5xl {
+  margin-right: var(--sprout-spacing-5xl);
+}
+
+.mt-5xl {
+  margin-top: var(--sprout-spacing-5xl);
+}
+
+.mb-5xl {
+  margin-bottom: var(--sprout-spacing-5xl);
+}
+
+.mx-5xl {
+  margin-left: var(--sprout-spacing-5xl);
+  margin-right: var(--sprout-spacing-5xl);
+}
+
+.my-5xl {
+  margin-top: var(--sprout-spacing-5xl);
+  margin-bottom: var(--sprout-spacing-5xl);
+}
+
+.m-6xl {
+  margin: var(--sprout-spacing-6xl);
+}
+
+.ml-6xl {
+  margin-left: var(--sprout-spacing-6xl);
+}
+
+.mr-6xl {
+  margin-right: var(--sprout-spacing-6xl);
+}
+
+.mt-6xl {
+  margin-top: var(--sprout-spacing-6xl);
+}
+
+.mb-6xl {
+  margin-bottom: var(--sprout-spacing-6xl);
+}
+
+.mx-6xl {
+  margin-left: var(--sprout-spacing-6xl);
+  margin-right: var(--sprout-spacing-6xl);
+}
+
+.my-6xl {
+  margin-top: var(--sprout-spacing-6xl);
+  margin-bottom: var(--sprout-spacing-6xl);
+}
+
+}
