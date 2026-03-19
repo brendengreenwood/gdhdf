@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kernel · Merchant Mental Models</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --serif: "Big Caslon","Book Antiqua",Palatino,serif;
+  --sans: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  --bg: #F5F3EE; --white: #fff;
+  --border: #E0DDD6; --border-lt: #EDEAE3;
+  --ink: #1A1A18; --ink-mid: #555550; --ink-dim: #999990;
+  --g: #2C5F2D; --g-dk: #1A3A0A; --g-lt: #EAF3DE; --g-bd: #C0DD97; --g-tx: #27500A; --g-mid: #639922;
+  --a: #7A4F0E; --a-dk: #412402; --a-lt: #FAEEDA; --a-bd: #FAC775; --a-tx: #633806; --a-mid: #BA7517;
+  --slate: #3A4A5C; --slate-lt: #EDF1F5; --slate-bd: #B8C8D8; --slate-tx: #1E2E3C;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;}
+
+.nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+.nav-brand{display:flex;align-items:center;gap:10px;}
+.nav-logo{width:30px;height:30px;background:var(--g);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:16px;font-weight:700;color:#fff;}
+.nav-name{font-size:13px;font-weight:600;letter-spacing:-0.01em;}
+.nav-tabs{display:flex;gap:3px;flex-wrap:wrap;}
+.nav-tab{font-size:11px;color:var(--ink-dim);padding:5px 11px;border-radius:20px;cursor:pointer;border:none;background:none;transition:all 0.15s;white-space:nowrap;text-decoration:none;}
+.nav-tab:hover{background:var(--bg);color:var(--ink);}
+.nav-tab.on{background:var(--g);color:#fff;}
+
+.hero{background:var(--white);border-bottom:1px solid var(--border);padding:56px 48px 52px;}
+.hero-inner{max-width:1040px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--g);margin-bottom:14px;}
+.hero h1{font-family:var(--serif);font-size:52px;line-height:1.03;font-weight:700;letter-spacing:-0.02em;margin-bottom:20px;}
+.hero-sub{font-size:14px;color:var(--ink-mid);line-height:1.7;}
+.hero-cards{display:flex;flex-direction:column;gap:12px;}
+.hcard{background:var(--bg);border-radius:22px;padding:20px 22px;border:1.5px solid var(--border);}
+.hcard-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+.hcard-name{font-family:var(--serif);font-size:22px;font-weight:700;letter-spacing:-0.01em;margin-bottom:2px;}
+.hcard-name.g{color:var(--g);} .hcard-name.a{color:var(--a);}
+.hcard-ctx{font-size:11px;color:var(--ink-dim);}
+.badge{font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;padding:4px 10px;border-radius:20px;flex-shrink:0;}
+.badge-g{background:var(--g-lt);color:var(--g-tx);border:1px solid var(--g-bd);}
+.badge-a{background:var(--a-lt);color:var(--a-tx);border:1px solid var(--a-bd);}
+.badge-s{background:var(--slate-lt);color:var(--slate-tx);border:1px solid var(--slate-bd);}
+.hcard-div{height:1px;background:var(--border);margin:12px 0;}
+.hcard-tag{font-family:var(--serif);font-size:13px;color:var(--ink-mid);font-style:italic;line-height:1.5;}
+
+.divider{height:1px;background:var(--border);margin:0 48px;}
+.section{padding:48px 48px;max-width:1040px;margin:0 auto;}
+.shead{margin-bottom:32px;}
+.shead h2{font-family:var(--serif);font-size:28px;font-weight:700;letter-spacing:-0.02em;margin-bottom:6px;}
+.shead p{font-family:var(--serif);font-size:14px;color:var(--ink-dim);font-style:italic;}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+
+.pcard{background:var(--white);border-radius:24px;border:1.5px solid var(--border);overflow:hidden;}
+.pcard-head{padding:18px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-lt);}
+.pcard-head.g{background:var(--g-lt);} .pcard-head.a{background:var(--a-lt);} .pcard-head.s{background:var(--slate-lt);}
+.pcard-name{font-family:var(--serif);font-size:20px;font-weight:700;letter-spacing:-0.01em;margin-bottom:2px;}
+.pcard-name.g{color:var(--g-dk);} .pcard-name.a{color:var(--a-dk);} .pcard-name.s{color:var(--slate-tx);}
+.pcard-ctx{font-size:11px;color:#777;}
+.pcard-body{padding:18px 22px;}
+.slabel{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#CCC;margin:14px 0 7px;}
+.slabel:first-child{margin-top:0;}
+.prow{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid #F0EDE6;gap:12px;font-size:13px;}
+.prow:last-of-type{border-bottom:none;}
+.prow .lbl{color:#999;flex-shrink:0;}
+.prow .val{font-weight:600;text-align:right;color:var(--ink);}
+.prow .val.g{color:var(--g-tx);} .prow .val.a{color:var(--a-tx);} .prow .val.w{color:var(--a-mid);}
+.pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
+.pill{font-size:11px;font-weight:500;padding:3px 11px;border-radius:20px;border:1.5px solid;}
+.pill.g{color:var(--g-tx);border-color:var(--g-bd);background:var(--g-lt);}
+.pill.a{color:var(--a-tx);border-color:var(--a-bd);background:var(--a-lt);}
+.pill.s{color:var(--slate-tx);border-color:var(--slate-bd);background:var(--slate-lt);}
+
+.gap-card{background:var(--white);border-radius:24px;border:1.5px solid var(--border);overflow:hidden;}
+.gap-head{padding:22px 26px;border-bottom:1.5px solid var(--border-lt);}
+.gap-head.g{background:var(--g-lt);border-bottom-color:var(--g-bd);}
+.gap-head.a{background:var(--a-lt);border-bottom-color:var(--a-bd);}
+.gap-name{font-family:var(--serif);font-size:20px;font-weight:700;letter-spacing:-0.02em;margin-bottom:3px;}
+.gap-name.g{color:var(--g-dk);} .gap-name.a{color:var(--a-dk);}
+.gap-role{font-size:11px;color:#777;margin-bottom:10px;}
+.gap-body{padding:22px 26px;}
+.gap-plabel{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#CCC;margin-bottom:8px;}
+.gap-statement{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--ink);line-height:1.35;margin-bottom:8px;letter-spacing:-0.01em;}
+.gap-context{font-size:13px;color:var(--ink-mid);line-height:1.6;margin-bottom:16px;}
+.gap-div{height:1px;background:var(--border-lt);margin:16px 0;}
+.gap-solution{font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:-0.01em;line-height:1.3;margin-bottom:8px;}
+.gap-solution.g{color:var(--g);} .gap-solution.a{color:var(--a);}
+.gap-solution-desc{font-size:13px;color:var(--ink-mid);line-height:1.6;margin-bottom:14px;}
+.gap-steps{display:flex;flex-direction:column;gap:6px;}
+.gap-step{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;border-radius:14px;font-size:12px;line-height:1.5;}
+.gap-step.g{background:var(--g-lt);color:var(--g-tx);} .gap-step.a{background:var(--a-lt);color:var(--a-tx);}
+.gap-step-num{font-family:var(--serif);font-size:15px;font-weight:700;line-height:1;flex-shrink:0;margin-top:1px;}
+.gap-step-num.g{color:var(--g-mid);} .gap-step-num.a{color:var(--a-mid);}
+
+.ht{background:var(--white);border-radius:24px;border:1.5px solid var(--border);overflow:hidden;}
+.ht-head{display:grid;grid-template-columns:1fr 140px 1fr;border-bottom:1.5px solid var(--border);}
+.hth{padding:13px 20px;font-family:var(--serif);font-size:15px;font-weight:700;text-align:center;}
+.hth.g{background:var(--g-lt);color:var(--g-dk);}
+.hth.dim{background:var(--bg);font-family:var(--sans);font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#BBB;display:flex;align-items:center;justify-content:center;border-left:1px solid var(--border);border-right:1px solid var(--border);}
+.hth.a{background:var(--a-lt);color:var(--a-dk);}
+.ht-row{display:grid;grid-template-columns:1fr 140px 1fr;border-bottom:1px solid var(--border-lt);transition:background 0.12s;}
+.ht-row:last-child{border-bottom:none;}
+.ht-row:hover{background:#FAFAF7;}
+.htc{padding:12px 20px;font-size:13px;display:flex;align-items:center;}
+.htc.g{color:var(--g-tx);font-weight:500;}
+.htc.dim{background:var(--bg);color:#BBB;font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;justify-content:center;text-align:center;border-left:1px solid var(--border);border-right:1px solid var(--border);}
+.htc.a{color:var(--a-tx);font-weight:500;justify-content:flex-end;text-align:right;}
+
+.flow-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;}
+.fstep{background:var(--white);border-radius:20px;border:1.5px solid var(--border);padding:18px 16px;}
+.fstep.hl{border-color:var(--g);background:var(--g-lt);}
+.fstep.cta{border-color:var(--a-mid);background:var(--a-lt);}
+.fnum{font-family:var(--serif);font-size:26px;font-weight:700;color:var(--border);margin-bottom:10px;line-height:1;}
+.fstep.hl .fnum{color:var(--g-bd);} .fstep.cta .fnum{color:var(--a-bd);}
+.ftitle{font-family:var(--serif);font-size:13px;font-weight:700;color:var(--ink);margin-bottom:7px;line-height:1.3;}
+.fdesc{font-size:11px;color:var(--ink-mid);line-height:1.5;}
+.flow-note{background:var(--white);border-radius:16px;border:1.5px solid var(--border);border-left:4px solid var(--g);padding:14px 20px;font-family:var(--serif);font-size:13px;color:var(--ink-mid);font-style:italic;line-height:1.6;}
+
+.jon-week{background:var(--white);border-radius:24px;border:1.5px solid var(--border);overflow:hidden;margin-bottom:16px;}
+.jon-week-head{padding:20px 26px;background:var(--a-lt);border-bottom:1.5px solid var(--a-bd);display:flex;align-items:flex-start;justify-content:space-between;gap:24px;}
+.jon-week-title{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--a-dk);margin-bottom:4px;}
+.jon-week-sub{font-size:12px;color:var(--a-tx);}
+.jon-week-body{padding:20px 26px;}
+.jon-days{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+.jon-day{background:var(--bg);border-radius:14px;padding:14px;}
+.jon-day-label{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#BBB;margin-bottom:8px;}
+.jon-day-title{font-family:var(--serif);font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px;line-height:1.25;}
+.jon-day-desc{font-size:11px;color:var(--ink-mid);line-height:1.5;}
+.jon-day.active{background:var(--a-lt);border:1.5px solid var(--a-bd);}
+.jon-day.active .jon-day-title{color:var(--a-dk);}
+
+.live-connector{background:var(--white);border-radius:20px;border:1.5px solid var(--border);padding:20px 24px;margin-bottom:14px;}
+.lc-inner{display:grid;grid-template-columns:1fr 32px 1fr;align-items:center;}
+.lc-side{padding:0 12px;}
+.lc-side:first-child{padding-left:0;}
+.lc-side:last-child{padding-right:0;}
+.lc-label{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;}
+.lc-label.g{color:var(--g);} .lc-label.a{color:var(--a);}
+.lc-title{font-family:var(--serif);font-size:15px;font-weight:700;margin-bottom:6px;line-height:1.25;}
+.lc-title.g{color:var(--g-dk);} .lc-title.a{color:var(--a-dk);}
+.lc-desc{font-size:12px;color:var(--ink-mid);line-height:1.55;}
+.lc-arrow{display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--border);}
+.lc-divider{height:1px;background:var(--border-lt);margin:14px 0;}
+.lc-note{font-family:var(--serif);font-size:12px;color:var(--ink-dim);font-style:italic;text-align:center;line-height:1.55;}
+
+.seam-card{background:var(--white);border-radius:24px;border:1.5px solid var(--border);padding:24px;margin-bottom:16px;}
+.seam-inner{display:grid;grid-template-columns:1fr 40px 1fr;align-items:center;}
+.seam-side{padding:0 14px;}
+.seam-side:first-child{padding-left:0;}
+.seam-side:last-child{padding-right:0;}
+.seam-label{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;}
+.seam-label.sf{color:var(--slate);} .seam-label.k{color:var(--g);}
+.seam-title{font-family:var(--serif);font-size:15px;font-weight:700;margin-bottom:6px;}
+.seam-title.sf{color:var(--slate-tx);} .seam-title.k{color:var(--g-dk);}
+.seam-desc{font-size:12px;color:var(--ink-mid);line-height:1.6;}
+.seam-rows{margin-top:10px;display:flex;flex-direction:column;gap:5px;}
+.seam-row{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--ink-mid);}
+.seam-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.seam-dot.sf{background:var(--slate);} .seam-dot.k{background:var(--g-mid);}
+.seam-connector{display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--border);}
+.seam-divider{height:1px;background:var(--border-lt);margin:16px 0;}
+.seam-bottom{font-family:var(--serif);font-size:12px;color:var(--ink-mid);font-style:italic;text-align:center;line-height:1.55;}
+
+.db-card{background:var(--white);border-radius:24px;border:1.5px solid var(--border);overflow:hidden;margin-bottom:16px;}
+.db-head{padding:20px 26px;background:var(--bg);border-bottom:1.5px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:24px;}
+.db-title{font-family:var(--serif);font-size:18px;font-weight:700;margin-bottom:5px;}
+.db-desc{font-size:12px;color:var(--ink-mid);line-height:1.55;max-width:500px;}
+.db-body{padding:20px 26px;}
+.db-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;}
+.db-col{background:var(--bg);border-radius:16px;padding:14px 16px;}
+.db-col-label{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#BBB;margin-bottom:10px;}
+.db-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border-lt);font-size:12px;gap:8px;}
+.db-row:last-child{border-bottom:none;}
+.db-crop{color:var(--ink-mid);}
+.db-price{font-family:var(--serif);font-weight:700;font-size:14px;color:var(--g);}
+.db-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;border:1px solid;white-space:nowrap;}
+.db-tag.none{color:#CCC;border-color:var(--border-lt);}
+.db-tag.interested{color:var(--g-tx);border-color:var(--g-bd);background:var(--g-lt);}
+.db-tag.watching{color:var(--a-tx);border-color:var(--a-bd);background:var(--a-lt);}
+.db-update{font-size:11px;color:#BBB;margin-top:8px;font-style:italic;}
+.intent-note{background:var(--g-lt);border-radius:16px;border:1.5px solid var(--g-bd);border-left:4px solid var(--g);padding:14px 20px;font-family:var(--serif);font-size:13px;color:var(--g-tx);font-style:italic;line-height:1.6;}
+
+.moment-card{background:var(--white);border-radius:20px;border:1.5px solid var(--border);overflow:hidden;}
+.moment-head{padding:16px 20px;border-bottom:1px solid var(--border-lt);}
+.moment-num{font-family:var(--serif);font-size:26px;font-weight:700;color:var(--border);margin-bottom:5px;line-height:1;}
+.moment-title{font-family:var(--serif);font-size:14px;font-weight:700;color:var(--ink);line-height:1.2;}
+.moment-body{padding:16px 20px;}
+.moment-trigger{font-size:11px;font-weight:600;color:var(--ink-mid);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border-lt);}
+.moment-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;font-size:12px;line-height:1.45;color:var(--ink-mid);}
+.moment-row:last-child{margin-bottom:0;}
+.moment-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.moment-dot.g{background:var(--g-mid);} .moment-dot.a{background:var(--a-mid);} .moment-dot.s{background:var(--slate);}
+
+.needs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+.ncard{background:var(--white);border-radius:20px;border:1.5px solid var(--border);padding:20px;}
+.ntitle{font-family:var(--serif);font-size:14px;font-weight:700;color:var(--ink);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border-lt);}
+.nrow{display:flex;align-items:flex-start;gap:8px;margin-bottom:7px;font-size:12px;line-height:1.4;}
+.nrow:last-child{margin-bottom:0;}
+.nrow.g{color:var(--g-tx);} .nrow.a{color:var(--a-tx);}
+.ndot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.ndot.g{background:var(--g-mid);} .ndot.a{background:var(--a-mid);}
+.plat-note{text-align:center;font-family:var(--serif);font-size:14px;color:var(--ink-dim);font-style:italic;padding:18px 0 0;border-top:1px solid var(--border);}
+.footer{background:var(--white);border-top:1px solid var(--border);padding:16px 48px;display:flex;justify-content:space-between;font-size:11px;color:#CCC;letter-spacing:0.06em;text-transform:uppercase;}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="nav-brand">
+    <div class="nav-logo">K</div>
+    <div class="nav-name">Kernel Merchandising</div>
+  </div>
+  <div class="nav-tabs">
+    <a href="#hero" class="nav-tab on">Overview</a>
+    <a href="#merchants" class="nav-tab">Merchants</a>
+    <a href="#gaps" class="nav-tab">The gaps</a>
+    <a href="#ht" class="nav-tab">Head to head</a>
+    <a href="#ben" class="nav-tab">Ben's workflow</a>
+    <a href="#jon" class="nav-tab">Jonathan's week</a>
+    <a href="#orig" class="nav-tab">Originators</a>
+    <a href="#book" class="nav-tab">Deferred book</a>
+    <a href="#needs" class="nav-tab">Platform needs</a>
+  </div>
+</div>
+
+<div id="hero" class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="eyebrow">Merchant mental models</div>
+      <h1>Two merchants.<br>One platform.</h1>
+      <p class="hero-sub">Same data layer. Completely different games. The platform needs to know which one you're playing — and present the right surface without asking.</p>
+    </div>
+    <div class="hero-cards">
+      <div class="hcard">
+        <div class="hcard-top">
+          <div><div class="hcard-name g">Ben</div><div class="hcard-ctx">River terminal portfolio · razor thin margins</div></div>
+          <div class="badge badge-g">Margin optimizer</div>
+        </div>
+        <div class="hcard-div"></div>
+        <div class="hcard-tag">Every basis point matters. PVP at the macro level. Watches competitor bids, directs his team like pieces on a board.</div>
+      </div>
+      <div class="hcard">
+        <div class="hcard-top">
+          <div><div class="hcard-name a">Jonathan</div><div class="hcard-ctx">Crush facility · legal obligation to keep running</div></div>
+          <div class="badge badge-a">Supply securer → margin optimizer</div>
+        </div>
+        <div class="hcard-div"></div>
+        <div class="hcard-tag">Facility cannot stop. Currently set-and-forget by necessity. The platform changes that — active management becomes cheap enough to actually do.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div id="merchants" class="section">
+  <div class="shead">
+    <h2>Two merchants. One platform.</h2>
+    <p>Same data layer. Completely different objectives.</p>
+  </div>
+  <div class="two-col">
+    <div class="pcard">
+      <div class="pcard-head g">
+        <div><div class="pcard-name g">Ben</div><div class="pcard-ctx">River terminal · razor thin margins</div></div>
+        <div class="badge badge-g">Margin optimizer</div>
+      </div>
+      <div class="pcard-body">
+        <div class="slabel">The game</div>
+        <div class="prow"><span class="lbl">Objective</span><span class="val">Capture margin on every bushel</span></div>
+        <div class="prow"><span class="lbl">Coverage is</span><span class="val g">Performance target</span></div>
+        <div class="prow"><span class="lbl">Strategy</span><span class="val">Macro — find zones, direct team</span></div>
+        <div class="slabel">How he works</div>
+        <div class="prow"><span class="lbl">Primary tool</span><span class="val">Competitive intel map</span></div>
+        <div class="prow"><span class="lbl">Watches</span><span class="val">Competitor bid history + trends</span></div>
+        <div class="prow"><span class="lbl">Workaround</span><span class="val w">Verbal — turns chair, talks to team</span></div>
+        <div class="slabel">What he needs</div>
+        <div class="pills">
+          <span class="pill g">Zone targeting</span>
+          <span class="pill g">Competitor spreads</span>
+          <span class="pill g">1-tap publish to team</span>
+          <span class="pill g">Farmer search</span>
+        </div>
+      </div>
+    </div>
+    <div class="pcard">
+      <div class="pcard-head a">
+        <div><div class="pcard-name a">Jonathan</div><div class="pcard-ctx">Crush facility · legal obligation to run</div></div>
+        <div class="badge badge-a">Supply securer → margin optimizer</div>
+      </div>
+      <div class="pcard-body">
+        <div class="slabel">The game</div>
+        <div class="prow"><span class="lbl">Objective</span><span class="val">Keep the facility running</span></div>
+        <div class="prow"><span class="lbl">Coverage is</span><span class="val a">Operational obligation</span></div>
+        <div class="prow"><span class="lbl">Market</span><span class="val">Largely captive — but margin still matters</span></div>
+        <div class="slabel">Current vs new</div>
+        <div class="prow"><span class="lbl">Today</span><span class="val w">Set-and-forget — rebuilds from scratch weekly</span></div>
+        <div class="prow"><span class="lbl">With Kernel</span><span class="val g">Active management all week long</span></div>
+        <div class="slabel">What he needs</div>
+        <div class="pills">
+          <span class="pill a">Scenario persistence</span>
+          <span class="pill a">Mid-week revision</span>
+          <span class="pill a">Coverage health map</span>
+          <span class="pill a">Live feedback loop</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div id="gaps" class="section">
+  <div class="shead">
+    <h2>Two gaps. Two different problems.</h2>
+    <p>The intelligence already exists. What's missing is the mechanism.</p>
+  </div>
+  <div class="two-col">
+    <div class="gap-card">
+      <div class="gap-head g">
+        <div class="gap-name g">Ben</div>
+        <div class="gap-role">River terminal portfolio · razor thin margins</div>
+        <div class="badge badge-g">Margin optimizer</div>
+      </div>
+      <div class="gap-body">
+        <div class="gap-plabel">The gap</div>
+        <div class="gap-statement">He sees the opportunity. His team doesn't know yet.</div>
+        <div class="gap-context">Ben reads the map, makes the call, then turns his chair and tells his team verbally. The intelligence exists. The last ten feet don't. Nothing gets captured. The ML learns nothing.</div>
+        <div class="gap-div"></div>
+        <div class="gap-plabel">What the tool needs to do</div>
+        <div class="gap-solution g">Frictionless publish from map to team.</div>
+        <div class="gap-solution-desc">Ben selects the zone. One tap. Team's books update instantly. Deferred book reflects new prices immediately. He turns his chair and says "check your books" — but now it's already there and captured.</div>
+        <div class="gap-steps">
+          <div class="gap-step g"><div class="gap-step-num g">1</div><div>Ben reads the map — competitor pulled back, zone is open</div></div>
+          <div class="gap-step g"><div class="gap-step-num g">2</div><div><strong>One tap</strong> — selects zone, leads generate, team books update</div></div>
+          <div class="gap-step g"><div class="gap-step-num g">3</div><div>Originators open queue — targets, map, current bid from deferred book</div></div>
+          <div class="gap-step g"><div class="gap-step-num g">4</div><div>Outcomes flow back — ML learns strategy from gestures on the map</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="gap-card">
+      <div class="gap-head a">
+        <div class="gap-name a">Jonathan</div>
+        <div class="gap-role">Crush facility · legal obligation to keep running</div>
+        <div class="badge badge-a">Supply securer</div>
+      </div>
+      <div class="gap-body">
+        <div class="gap-plabel">The gap</div>
+        <div class="gap-statement">He rebuilds from scratch every single week.</div>
+        <div class="gap-context">Jonathan already knows what he's doing. He sets up scenarios, powers through the spreadsheet friction because the output is worth it. But there's no persistence. Every Monday he starts from zero.</div>
+        <div class="gap-div"></div>
+        <div class="gap-plabel">What the tool needs to do</div>
+        <div class="gap-solution a">Persist scenarios. Load last week. Adjust. Push.</div>
+        <div class="gap-solution-desc">Last scenario loads Monday. Update basis, adjust a zone, push in minutes. Mid-week revision becomes cheap — when something isn't converting, he adjusts it. Deferred book updates instantly for his team.</div>
+        <div class="gap-steps">
+          <div class="gap-step a"><div class="gap-step-num a">1</div><div><strong>Last week loads automatically</strong>, current market data applied</div></div>
+          <div class="gap-step a"><div class="gap-step-num a">2</div><div>Reviews — basis moved, one zone needs adjustment, rest holds</div></div>
+          <div class="gap-step a"><div class="gap-step-num a">3</div><div>Pushes revision — <strong>deferred book updates for team immediately</strong></div></div>
+          <div class="gap-step a"><div class="gap-step-num a">4</div><div>Feedback flows back mid-week. He adjusts again. Active management.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div id="ht" class="section">
+  <div class="shead">
+    <h2>Head to head</h2>
+    <p>Same question. Different answer. Same platform.</p>
+  </div>
+  <div class="ht">
+    <div class="ht-head">
+      <div class="hth g">Ben</div><div class="hth dim">Dimension</div><div class="hth a">Jonathan</div>
+    </div>
+    <div class="ht-row"><div class="htc g">Where can I win this week?</div><div class="htc dim">Morning question</div><div class="htc a">Do I have enough grain flowing?</div></div>
+    <div class="ht-row"><div class="htc g">Attack the open zone</div><div class="htc dim">Map view</div><div class="htc a">Where is coverage thin?</div></div>
+    <div class="ht-row"><div class="htc g">Opportunity opens → move</div><div class="htc dim">Alert trigger</div><div class="htc a">Coverage drops → act now</div></div>
+    <div class="ht-row"><div class="htc g">Beat the competitor</div><div class="htc dim">ML objective</div><div class="htc a">Don't overpay for captive supply</div></div>
+    <div class="ht-row"><div class="htc g">1-tap publish to team</div><div class="htc dim">Key workflow gap</div><div class="htc a">Load last week, adjust, push</div></div>
+    <div class="ht-row"><div class="htc g">Already there — needs the mechanism</div><div class="htc dim">Active management</div><div class="htc a">Platform enables it for the first time</div></div>
+    <div class="ht-row"><div class="htc g">Competitive intel map</div><div class="htc dim">Primary surface</div><div class="htc a">Coverage health map</div></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div id="ben" class="section">
+  <div class="shead">
+    <h2>Ben's workflow · The macro play</h2>
+    <p>Strategy sets in seconds. Team acts immediately. Everything gets captured.</p>
+  </div>
+  <div class="flow-grid">
+    <div class="fstep"><div class="fnum">01</div><div class="ftitle">Read the map</div><div class="fdesc">Competitor bids, territory spread, freight advantage. Ben sees where the opportunity is opening.</div></div>
+    <div class="fstep"><div class="fnum">02</div><div class="ftitle">Identify zones</div><div class="fdesc">Southeast corridor open. Atlantic Foods pulled back. Freight math favors Cargill by 4 cents.</div></div>
+    <div class="fstep hl"><div class="fnum">03</div><div class="ftitle">One tap</div><div class="fdesc">Ben selects the zone. Kernel generates leads. Team's books update. Deferred book reflects new prices instantly.</div></div>
+    <div class="fstep cta"><div class="fnum">04</div><div class="ftitle">"Boys, I updated your books"</div><div class="fdesc">Alex opens his queue — new targets, map, current bid already in the deferred book. Calls immediately.</div></div>
+    <div class="fstep hl"><div class="fnum">05</div><div class="ftitle">Outcomes flow back</div><div class="fdesc">Alex logs results in SF or Kernel. Dashboard updates. ML learns what worked in that zone.</div></div>
+  </div>
+  <div class="flow-note">The chair turn becomes a tap. The verbal instruction becomes captured data. The ML learns Ben's strategy from his gestures on the map.</div>
+</div>
+
+<div class="divider"></div>
+
+<div id="jon" class="section">
+  <div class="shead">
+    <h2>Jonathan's week · Active management</h2>
+    <p>The platform changes how he works. Set-and-forget becomes adjust-as-you-go.</p>
+  </div>
+  <div class="jon-week">
+    <div class="jon-week-head">
+      <div>
+        <div class="jon-week-title">From one push to ongoing management</div>
+        <div class="jon-week-sub">Every revision updates the deferred book instantly — originators are always working against current prices</div>
+      </div>
+      <div class="badge badge-a">Crush facility · captive territory</div>
+    </div>
+    <div class="jon-week-body">
+      <div class="jon-days">
+        <div class="jon-day active">
+          <div class="jon-day-label">Monday</div>
+          <div class="jon-day-title">Last week loads</div>
+          <div class="jon-day-desc">Scenario auto-loaded with current market data. Review, adjust basis, push. Deferred book updates for team immediately.</div>
+        </div>
+        <div class="jon-day">
+          <div class="jon-day-label">Tuesday</div>
+          <div class="jon-day-title">Outcomes flowing</div>
+          <div class="jon-day-desc">Sees zone A converting. Zone B stalling — farmers not biting at current basis. Deferred intent tags building.</div>
+        </div>
+        <div class="jon-day active">
+          <div class="jon-day-label">Wednesday</div>
+          <div class="jon-day-title">Mid-week revision</div>
+          <div class="jon-day-desc">Adjusts basis on zone B, pushes. Deferred book updates instantly — originators see new prices without a phone call.</div>
+        </div>
+        <div class="jon-day">
+          <div class="jon-day-label">Thursday</div>
+          <div class="jon-day-title">Coverage check</div>
+          <div class="jon-day-desc">Tracks progress by delivery month. Sees December corn interest building from deferred intent tags.</div>
+        </div>
+        <div class="jon-day">
+          <div class="jon-day-label">Friday</div>
+          <div class="jon-day-title">Week closes</div>
+          <div class="jon-day-desc">Full scenario history preserved. ML has delta signal. Deferred intent tags inform next week's scenario. Monday starts here.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div id="orig" class="section">
+  <div class="shead">
+    <h2>Originators · Salesforce is home. Kernel is the intelligence layer.</h2>
+    <p>Meet them where they are. Kernel surfaces at the right moment — don't make them choose.</p>
+  </div>
+
+  <div class="seam-card">
+    <div class="seam-inner">
+      <div class="seam-side">
+        <div class="seam-label sf">Salesforce</div>
+        <div class="seam-title sf">Relationship management</div>
+        <div class="seam-desc">Where originators live. Call logs, farmer history, relationship notes, outcome logging. The CRM layer. Not being replaced.</div>
+        <div class="seam-rows">
+          <div class="seam-row"><div class="seam-dot sf"></div><span>Call history and notes</span></div>
+          <div class="seam-row"><div class="seam-dot sf"></div><span>Farmer relationship record</span></div>
+          <div class="seam-row"><div class="seam-dot sf"></div><span>Outcome logging</span></div>
+          <div class="seam-row"><div class="seam-dot sf"></div><span>Link → open Kernel profile</span></div>
+        </div>
+      </div>
+      <div class="seam-connector">⇄</div>
+      <div class="seam-side">
+        <div class="seam-label k">Kernel</div>
+        <div class="seam-title k">Intelligence layer</div>
+        <div class="seam-desc">Surfaces at the right moment. Deferred book, ML lead score, satellite signal, position context, deferred intent tagging. Additive to SF, not a replacement.</div>
+        <div class="seam-rows">
+          <div class="seam-row"><div class="seam-dot k"></div><span>Deferred book — current prices always live</span></div>
+          <div class="seam-row"><div class="seam-dot k"></div><span>ML lead score + reasoning</span></div>
+          <div class="seam-row"><div class="seam-dot k"></div><span>Crop stress signal for farmer's fields</span></div>
+          <div class="seam-row"><div class="seam-dot k"></div><span>Deferred intent tagging</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="seam-divider"></div>
+    <div class="seam-bottom">Feedback can be logged in either system — whichever is lower friction in the moment. Kernel harvests outcome data from Salesforce and stitches it back to the scenario and the ML feedback loop.</div>
+  </div>
+
+  <div class="live-connector">
+    <div class="lc-inner">
+      <div class="lc-side">
+        <div class="lc-label g">Merchant pushes a revision</div>
+        <div class="lc-title g">Scenario updates mid-week</div>
+        <div class="lc-desc">Ben pushes a zone. Jonathan adjusts basis on a stalling zone. Either way it's a scenario change that has downstream effects.</div>
+      </div>
+      <div class="lc-arrow">→</div>
+      <div class="lc-side">
+        <div class="lc-label a">Originator context updates instantly</div>
+        <div class="lc-title a">Deferred book reflects the change</div>
+        <div class="lc-desc">No phone call. No spreadsheet email. Originator opens the book and sees current prices. Every call they make from that moment is against the merchant's latest thinking.</div>
+      </div>
+    </div>
+    <div class="lc-divider"></div>
+    <div class="lc-note">The merchant's active management and the originator's live context are the same event. One push connects both.</div>
+  </div>
+
+  <div class="two-col">
+    <div class="pcard">
+      <div class="pcard-head g">
+        <div><div class="pcard-name g">Ben's originators</div><div class="pcard-ctx">Strike team · execute the zone play</div></div>
+        <div class="badge badge-g">Competitive</div>
+      </div>
+      <div class="pcard-body">
+        <div class="slabel">The job</div>
+        <div class="prow"><span class="lbl">Queue is</span><span class="val">A deployment order</span></div>
+        <div class="prow"><span class="lbl">Urgency</span><span class="val">Competitive — window can close in hours</span></div>
+        <div class="prow"><span class="lbl">Objective</span><span class="val">Win the farmer before the competitor does</span></div>
+        <div class="slabel">Kernel adds to SF pre-call brief</div>
+        <div class="prow"><span class="lbl">Adds</span><span class="val g">Competitor spread in farmer's area</span></div>
+        <div class="prow"><span class="lbl">Adds</span><span class="val g">Freight advantage vs nearest elevator</span></div>
+        <div class="prow"><span class="lbl">Adds</span><span class="val g">Current bid from deferred book</span></div>
+        <div class="slabel">Originator can tag</div>
+        <div class="prow"><span class="lbl">In Kernel or SF</span><span class="val g">Interested · Watching · Deferred · Not selling</span></div>
+      </div>
+    </div>
+    <div class="pcard">
+      <div class="pcard-head a">
+        <div><div class="pcard-name a">Jonathan's originators</div><div class="pcard-ctx">Maintenance crew · keep coverage warm</div></div>
+        <div class="badge badge-a">Relational</div>
+      </div>
+      <div class="pcard-body">
+        <div class="slabel">The job</div>
+        <div class="prow"><span class="lbl">Queue is</span><span class="val">A coverage checklist</span></div>
+        <div class="prow"><span class="lbl">Urgency</span><span class="val">Coverage-driven — nothing should go cold</span></div>
+        <div class="prow"><span class="lbl">Objective</span><span class="val">Keep every farmer in territory warm</span></div>
+        <div class="slabel">Kernel adds to SF pre-call brief</div>
+        <div class="prow"><span class="lbl">Adds</span><span class="val a">Deferred intent — what month they're watching</span></div>
+        <div class="prow"><span class="lbl">Adds</span><span class="val a">Crop stress signal for their fields</span></div>
+        <div class="prow"><span class="lbl">Adds</span><span class="val a">Likelihood to sell based on history + conditions</span></div>
+        <div class="slabel">Originator can tag</div>
+        <div class="prow"><span class="lbl">In Kernel or SF</span><span class="val a">Interested · Watching · Deferred · Not selling</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div id="book" class="section">
+  <div class="shead">
+    <h2>The deferred book</h2>
+    <p>A live price sheet. Always current. A two-way instrument.</p>
+  </div>
+  <div class="db-card">
+    <div class="db-head">
+      <div>
+        <div class="db-title">Current prices · tag farmer intent directly on the row</div>
+        <p class="db-desc">Updates every time a merchant pushes a revision. Originator sees current prices without a phone call. When a farmer expresses interest, tag it right here — in the book or in Salesforce.</p>
+      </div>
+      <div class="badge badge-g" style="align-self:flex-start;margin-top:4px;">Updates on every push</div>
+    </div>
+    <div class="db-body">
+      <div class="db-grid">
+        <div class="db-col">
+          <div class="db-col-label">Atlantic Main · ATL</div>
+          <div class="db-row"><span class="db-crop">Corn · Oct</span><span class="db-price">13¢ under</span><span class="db-tag none">+ tag</span></div>
+          <div class="db-row"><span class="db-crop">Corn · Dec</span><span class="db-price">11¢ under</span><span class="db-tag interested">Interested</span></div>
+          <div class="db-row"><span class="db-crop">Beans · Nov</span><span class="db-price" style="color:var(--a)">29¢ under</span><span class="db-tag none">+ tag</span></div>
+          <div class="db-row"><span class="db-crop">Corn · Mar</span><span class="db-price">15¢ under</span><span class="db-tag watching">Watching</span></div>
+          <div class="db-update">Updated 6 min ago · Jonathan pushed mid-week revision</div>
+        </div>
+        <div class="db-col">
+          <div class="db-col-label">Harlan Station · HAR</div>
+          <div class="db-row"><span class="db-crop">Corn · Oct</span><span class="db-price">14¢ under</span><span class="db-tag none">+ tag</span></div>
+          <div class="db-row"><span class="db-crop">Corn · Dec</span><span class="db-price">13¢ under</span><span class="db-tag none">+ tag</span></div>
+          <div class="db-row"><span class="db-crop">Beans · Nov</span><span class="db-price" style="color:var(--a)">32¢ under</span><span class="db-tag interested">Interested</span></div>
+          <div class="db-row"><span class="db-crop">Corn · Mar</span><span class="db-price">17¢ under</span><span class="db-tag none">+ tag</span></div>
+          <div class="db-update">Updated 6 min ago · Jonathan pushed mid-week revision</div>
+        </div>
+        <div class="db-col">
+          <div class="db-col-label">Ames Main · AME</div>
+          <div class="db-row"><span class="db-crop">Corn · Oct</span><span class="db-price">14¢ under</span><span class="db-tag none">+ tag</span></div>
+          <div class="db-row"><span class="db-crop">Corn · Dec</span><span class="db-price">12¢ under</span><span class="db-tag none">+ tag</span></div>
+          <div class="db-row"><span class="db-crop">Beans · Nov</span><span class="db-price" style="color:var(--a)">31¢ under</span><span class="db-tag none">+ tag</span></div>
+          <div class="db-row"><span class="db-crop">Corn · Mar</span><span class="db-price">16¢ under</span><span class="db-tag watching">Watching</span></div>
+          <div class="db-update">Updated 22 min ago · Ben pushed zone revision</div>
+        </div>
+      </div>
+      <div class="intent-note">When December corn basis moves favorably, every Interested and Watching tag for that month surfaces as a callback prompt. The merchant sees warm pipeline by delivery month — soft commitments that haven't closed yet but signal where coverage is building.</div>
+    </div>
+  </div>
+
+  <div class="three-col">
+    <div class="moment-card">
+      <div class="moment-head">
+        <div class="moment-num">1</div>
+        <div class="moment-title">Inbound</div>
+      </div>
+      <div class="moment-body">
+        <div class="moment-trigger">Farmer calls in wanting to sell</div>
+        <div class="moment-row"><div class="moment-dot g"></div><span>Deferred book fires — current price for their crop and delivery month</span></div>
+        <div class="moment-row"><div class="moment-dot g"></div><span>SF profile open in parallel — relationship history, last note</span></div>
+        <div class="moment-row"><div class="moment-dot g"></div><span>Close or tag deferred intent if they're not ready yet</span></div>
+      </div>
+    </div>
+    <div class="moment-card">
+      <div class="moment-head">
+        <div class="moment-num">2</div>
+        <div class="moment-title">Outbound</div>
+      </div>
+      <div class="moment-body">
+        <div class="moment-trigger">Working the queue Ben or Jon pushed</div>
+        <div class="moment-row"><div class="moment-dot a"></div><span>SF context — relationship history, last contact note</span></div>
+        <div class="moment-row"><div class="moment-dot a"></div><span>Kernel adds — crop stress, competitor spread, current bid</span></div>
+        <div class="moment-row"><div class="moment-dot a"></div><span>Log outcome in SF or Kernel — both feed the loop</span></div>
+      </div>
+    </div>
+    <div class="moment-card">
+      <div class="moment-head">
+        <div class="moment-num">3</div>
+        <div class="moment-title">Deferred follow-up</div>
+      </div>
+      <div class="moment-body">
+        <div class="moment-trigger">Warm farmers who tagged interest</div>
+        <div class="moment-row"><div class="moment-dot s"></div><span>Basis moves favorably → callback prompt fires for tagged farmers</span></div>
+        <div class="moment-row"><div class="moment-dot s"></div><span>Merchant sees warm pipeline by delivery month in real time</span></div>
+        <div class="moment-row"><div class="moment-dot s"></div><span>Feeds coverage picture before commitments formally close</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div id="needs" class="section">
+  <div class="shead">
+    <h2>What the platform needs to serve everyone</h2>
+    <p>Same data layer. Persona-aware views. Different objective functions.</p>
+  </div>
+  <div class="needs-grid">
+    <div class="ncard"><div class="ntitle">Publish mechanism</div><div class="nrow g"><div class="ndot g"></div><span>Ben draws zone → one tap → team books + deferred book update</span></div><div class="nrow a"><div class="ndot a"></div><span>Jon pushes revised scenario → same result instantly</span></div></div>
+    <div class="ncard"><div class="ntitle">Scenario persistence</div><div class="nrow g"><div class="ndot g"></div><span>Ben's zone selections + outcomes tracked week over week</span></div><div class="nrow a"><div class="ndot a"></div><span>Last week's scenario loads Monday — adjust, don't rebuild</span></div></div>
+    <div class="ncard"><div class="ntitle">Persona-aware map</div><div class="nrow g"><div class="ndot g"></div><span>Competitive heat map — where to attack this week</span></div><div class="nrow a"><div class="ndot a"></div><span>Coverage health map — where is supply getting thin</span></div></div>
+    <div class="ncard"><div class="ntitle">Deferred book</div><div class="nrow g"><div class="ndot g"></div><span>Live price sheet — fires on inbound, always current</span></div><div class="nrow a"><div class="ndot a"></div><span>Updates on every scenario push — no phone call needed</span></div></div>
+    <div class="ncard"><div class="ntitle">Deferred intent capture</div><div class="nrow g"><div class="ndot g"></div><span>Tag a price row in Kernel or SF — fires callback on basis move</span></div><div class="nrow a"><div class="ndot a"></div><span>Merchant sees warm pipeline by delivery month in real time</span></div></div>
+    <div class="ncard"><div class="ntitle">SF integration</div><div class="nrow g"><div class="ndot g"></div><span>Kernel surfaces in SF at moment of call — opens full profile</span></div><div class="nrow a"><div class="ndot a"></div><span>Feedback logged in either system — both feed the ML loop</span></div></div>
+  </div>
+  <div class="plat-note">The tool knows which game you are playing and presents the right surface — without asking.</div>
+</div>
+
+<div class="footer">
+  <span>Kernel · Cargill confidential</span>
+  <span>Merchant mental models · March 2026</span>
+</div>
+
+</body>
+</html>
