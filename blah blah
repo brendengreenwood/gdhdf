@@ -1,0 +1,84 @@
+Merchant
+Role
+Merchants own buying strategy for the business. Merchants read the market, competitor bids, freight, and plant needs to decide how aggressively to price while managing position — balancing what the business has bought, sold, and still needs to cover. They turn that into direction for Originators so grain keeps flowing without overpaying or putting margin at risk.
+Primary goals
+•	Keep plants covered without giving away margin
+•	Read the competitive landscape quickly
+•	Turn market judgment into actionable field direction
+•	Monitor whether strategy is working
+What matters most
+•	Stay competitive without overbidding
+•	Keep plants covered
+•	Give originators named accounts and price direction
+•	See quickly if yesterday’s strategy worked
+What they do
+•	Assess market position and competitor behavior
+•	Set bid floors, spreads, and pricing posture
+•	Build/refine target producer lists
+•	Package guidance for originators
+•	Review outcomes and decide whether to adjust
+What they need
+•	Fast view of the market and competitive landscape
+•	Clear path from analysis to target list
+•	Easy delivery of actionable guidance to originators
+•	Simple feedback loop on what worked yesterday
+Pain points
+•	Rebuilds the same scenario over and over instead of starting from saved defaults
+•	Has to manually add or adjust competitors to reflect the real market (data can be inaccurate)
+•	Hover / inspect behavior gets in the way of lassoing and map selection
+•	Exports to spreadsheet to clean columns, filter lists, and package for originators
+•	Uses contract advisee emails and inbox traffic to piece together outcomes
+•	Falls back to screenshots, email, or verbal direction when using the tool is slower than routing around it
+Current workarounds
+•	Exporting and reformatting spreadsheets
+•	Sending screenshots, emails, and verbal guidance
+•	Using inbox activity to infer outcomes
+•	Falling back to ad hoc judgment when the workflow is too painful
+Tools
+•	Strategic pricing tool 
+•	Excel / local spreadsheets
+o	Bid sheet
+o	Stox report
+o	Freight sheet
+o	Position sheet
+•	Teams
+•	Email
+•	Lynx
+•	ProfitX
+•	Phone / texting
+•	Screenshots / manual workarounds
+Opportunity
+Make the tool a true merchant workbench:
+•	Save default facility / month / competitor setups so daily analysis starts faster
+•	Give merchants a table view after the map so they can sort, filter, and package lists without Excel
+•	Show “what happened yesterday” in one place instead of making merchants read email to infer results
+•	Create originator-ready outputs directly in the tool instead of after-the-fact spreadsheet cleanup
+ 
+Distinctions: Ben vs. Jonathan
+	Ben	Jonathan
+Core use	Daily competitive landscape scan	Weekly strategy + originator direction
+What he values	Quick read on competitor position	Turning strategy into team action
+Main pain	Tool is useful but not intuitive	Workflow breaks once he has to export and distribute
+What he wants	Keep the logic, make it easier to use	Saved defaults, easier setup, clearer prior-day feedback
+Operating context	Market reading and bid logic	Crush plant coverage and team coordination
+Quotes
+Ben
+What he likes / value:
+“So that's that's largely what I am using the tool quickly for on a daily basis is just look in through the the competitive landscape.”
+How he sees the merchant job:
+“So that's basically what a merchant does is at a super high level. It's just understanding the cheapest level they can buy and trying to sell at the highest level they can buy low, sell high across all months and different commodities.”
+Product direction:
+“I think the main first step would be to just make this like keep the same functional options it has, but just make it more intuitive and easier to use.”
+
+Jonathan
+Weekly operating rhythm:
+“I basically Monday mornings I send out an update to a pretty wide group really... there's about 14 originators that are on there that that kind of tries to give them some direction and what their week's going to look like.”
+Business stakes
+“If you shut that plant down for a day because you ran out of beans, that's $100,000 that's gone, so that can't happen.”
+Specific product ask:
+“Give me some default parameters that I want... that I can save my own default and then change it quick.”
+
+ 
+One-line summary
+Merchants create the strategic value in the PoC, but today the tool does not carry that value cleanly into execution and feedback.
+
