@@ -1,0 +1,656 @@
+Merchant Activity Analysis
+Using Activity → Task → Operation, and explicitly including:
+•	Pre-tool work
+•	in-tool work
+•	post-tool work
+•	conditions
+•	breakdowns
+•	tool mediation
+•	tool switches
+•	contradictions
+ 
+Activity 1: Calibrate daily grain buying position
+Motive
+Buy grain at the cheapest competitive level while protecting margin and keeping supply flowing.
+Subject
+Merchant
+Community
+•	Originators
+•	Other commercial team members
+Rules
+•	Keep bids competitive but as cheap as possible
+•	Avoid costly supply mistakes
+•	Adjust strategy when market conditions change
+Division of labor
+•	Merchant analyzes market position and economics
+•	Merchant informs downstream execution by others
+ 
+Task 1.1: Form an initial market frame before opening the pricing tool
+Goal
+Create decision context before tool use.
+Conditions
+•	Usually start of day
+•	Or when market movement suggests bids may need review
+Variations
+•	Brief on stable days
+•	More involved in volatile markets
+Breakdowns
+•	Important context is scattered across sources and the merchant’s head
+Operations
+Operation 1.1.1
+Action
+Scan current market conditions, business pressures, and coverage context mentally or through familiar market sources
+Tools
+•	Market sources
+•	Mental model
+Tool mediation
+•	Links: secondary, low friction
+Automaticity
+•	Semi-automatic
+Input from
+•	None
+Output to
+•	Pricing Tool
+ 
+Operation 1.1.2
+Action
+Decide which facility, geography, or month needs attention first
+Tools
+•	Mental model
+Tool mediation
+•	None
+Automaticity
+•	Semi-automatic
+Input from
+•	None
+Output to
+•	Pricing Tool
+ 
+Tool switches
+•	market sources → pricing tool
+•	reason: move from context framing into market inspection
+•	friction: low
+ 
+Task 1.2: Inspect the competitive landscape and determine bid position
+Goal
+Use the tool to understand market position and whether bids should move.
+Conditions
+•	After forming an initial market frame
+Variations
+•	Sometimes only quick inspection is needed
+•	Sometimes competitor setup must be refined
+Breakdowns
+•	Tool usability and discoverability slow orientation
+•	Manual competitor setup is clunky
+•	Reasoning is not captured well in the system
+Operations
+Operation 1.2.1
+Action
+Open the pricing tool and orient to the current competitive landscape
+Tools
+•	Pricing Tool
+Tool mediation
+•	Pricing Tool: primary, medium friction
+•	workaround: rely on familiarity and repeated use to find needed views
+Automaticity
+•	Conscious
+Input from
+•	Market sources
+Output to
+•	Pricing Tool
+ 
+Operation 1.2.2
+Action
+Compare own posted bids with competitor bids across relevant facilities and months
+Tools
+•	Pricing Tool
+Tool mediation
+•	Pricing Tool: primary, medium friction
+Automaticity
+•	Semi-automatic
+Input from
+•	Pricing Tool
+Output to
+•	Pricing Tool
+ 
+Operation 1.2.3
+Action
+Interpret bid positions relative to sellable value, freight context, and margin logic
+Tools
+•	Pricing Tool
+•	Merchant judgment
+Tool mediation
+•	Pricing Tool: primary, medium friction
+•	workaround: carry much of the reasoning mentally instead of in the system
+Automaticity
+•	Conscious
+Input from
+•	Pricing Tool
+Output to
+•	None
+ 
+Operation 1.2.4
+Action
+Add or adjust competitor data when the default model does not reflect the true competitive situation
+Tools
+•	Pricing Tool
+Tool mediation
+•	Pricing Tool: primary, high friction
+•	workaround: only adjust selectively because setup is cumbersome
+Automaticity
+•	Conscious
+Conditions
+•	Only when relevant competitors are missing or not representative
+Input from
+•	Pricing Tool
+Output to
+•	Pricing Tool
+ 
+Task 1.3: Translate bid analysis into action outside the tool
+Goal
+Convert analysis into business action.
+Conditions
+•	After interpreting competitive and economic position
+Variations
+•	Sometimes action stays internal
+•	Sometimes guidance is passed to originators or others
+Breakdowns
+•	Work often leaves the product quickly and becomes hard to trace
+Operations
+Operation 1.3.1
+Action
+Decide whether to move bids, hold, or communicate direction to others
+Tools
+•	Merchant judgment
+Tool mediation
+•	None
+Automaticity
+•	Conscious
+Input from
+•	Pricing Tool
+Output to
+•	Email
+ 
+Operation 1.3.2
+Action
+Share guidance informally through conversation or adjacent communication channels
+Tools
+•	Email
+•	Conversation
+Tool mediation
+•	Links: secondary, low friction
+Automaticity
+•	Semi-automatic
+Input from
+•	Pricing Tool
+Output to
+•	None
+ 
+Tool switches
+•	pricing tool → email
+•	reason: communicate pricing direction or decisions
+•	friction: low
+ 
+Contradictions in Activity 1
+Secondary contradictions
+1.	Useful competitive logic vs poor interaction design
+The tool contains useful logic, but the interaction design slows the daily inspection work merchants rely on.
+2.	Need accurate competitor modeling vs clunky competitor setup
+Merchants need realistic competitor models, but setup is cumbersome enough to discourage refinement.
+ 
+Activity 2: Evaluate whether to do producer-level targeting
+Motive
+Turn market insight into targeted field action only when expected value exceeds workflow pain.
+Subject
+Merchant
+Community
+•	Originators
+Rules
+•	Do producer-level work only when it adds enough value to justify the effort
+Division of labor
+•	Merchant decides whether targeting effort is justified
+•	Merchant may provide rough guidance instead of structured outputs
+ 
+MTask 2.1: Judge whether producer-level targeting is worth pursuing
+Goal
+Decide if the workflow is worth the effort.
+Conditions
+•	After or alongside market analysis
+•	When producer-specific follow-up is possible
+Variations
+•	May be skipped entirely if lightweight guidance is sufficient
+Breakdowns
+•	Expected workflow pain suppresses use before the merchant even begins
+Operations
+Operation 2.1.1
+Action
+Assess whether current market opportunity or business need justifies a producer-targeting workflow
+Tools
+•	Merchant judgment
+Tool mediation
+•	None
+Automaticity
+•	Conscious
+Input from
+•	Pricing Tool
+Output to
+•	Pricing Tool
+ 
+Task 2.2: Inspect producer-level opportunities in the tool
+Goal
+Try to identify actionable producer opportunities.
+Conditions
+•	Only when the merchant decides targeting is worth attempting
+Variations
+•	Map view first
+•	Or list view first
+Breakdowns
+•	Several fields feel unclear or low-value for merchants
+•	Discoverability issues reduce confidence
+Operations
+Operation 2.2.1
+Action
+Open producer list or map views to inspect possible targets
+Tools
+•	Pricing Tool
+Tool mediation
+•	Pricing Tool: primary, medium friction
+Automaticity
+•	Conscious
+Input from
+•	Pricing Tool
+Output to
+•	Pricing Tool
+ 
+Operation 2.2.2
+Action
+Interpret producer-list fields and attempt to refine toward an actionable shortlist
+Tools
+•	Pricing Tool
+Tool mediation
+•	Pricing Tool: primary, high friction
+•	workaround: fall back to rough interpretation rather than full structured refinement
+Automaticity
+•	Conscious
+Input from
+•	Pricing Tool
+Output to
+•	Pricing Tool
+ 
+Task 2.3: Work around the tool when targeting becomes too painful
+Goal
+Still get action into the field even if the intended workflow fails.
+Conditions
+•	When workflow friction outweighs expected value
+Variations
+•	Rough guidance instead of full structured list
+Breakdowns
+•	Pain-induced abandonment of strategically valuable workflow
+Operations
+Operation 2.3.1
+Action
+Capture screenshots, give verbal direction, or use ad hoc judgment instead of completing the structured targeting workflow
+Tools
+•	Screenshots
+•	Conversation
+•	Pricing Tool
+Tool mediation
+•	Pricing Tool: fallback, high friction
+•	workaround: abandon formal workflow and use lighter-weight communication
+Automaticity
+•	Semi-automatic
+Input from
+•	Pricing Tool
+Output to
+•	None
+ 
+Tool switches
+•	Pricing tool → Conversation
+•	Reason: structured targeting is too painful to complete
+•	Friction: medium
+ 
+Contradictions in Activity 2
+Secondary contradiction
+1.	Targeting is valuable vs targeting is avoided
+The workflow is strategically valuable, but its friction suppresses use and causes merchants to avoid it unless necessary.
+ 
+Activity 3: Prepare and package weekly market strategy for originators
+Motive
+Keep facilities supplied by translating market outlook and buying strategy into coordinated field action.
+Subject
+Merchant
+Community
+•	Originators
+•	Weekly stakeholder email recipients
+Rules
+•	Do not risk plant supply shortages
+•	Provide usable direction to originators
+•	Keep weekly strategy aligned with changing market conditions
+Division of labor
+•	Merchant frames strategy
+•	Merchant models opportunities
+•	Merchant packages direction
+•	Originators execute in the field
+ 
+Task 3.1: Frame weekly strategy before opening the pricing tool
+Goal
+Create a weekly strategy direction before detailed analysis.
+Conditions
+•	Typically Monday morning
+Variations
+•	Sometimes broad guidance only
+•	Sometimes followed by detailed targeting
+Breakdowns
+•	Communication can be broad and detached from downstream workflows
+Operations
+Operation 3.1.1
+Action
+Review weekly coverage needs, plant risk, market outlook, and likely buying priorities
+Tools
+•	Market sources
+•	Merchant judgment
+Tool mediation
+•	Links: secondary, low friction
+Automaticity
+•	Semi-automatic
+Input from
+•	None
+Output to
+•	Email
+ 
+Operation 3.1.2
+Action
+Draft or send a weekly update to originators and stakeholders describing likely direction for the week
+Tools
+•	Email
+Tool mediation
+•	Links: secondary, low friction
+Automaticity
+•	Semi-automatic
+Input from
+•	None
+Output to
+•	Pricing Tool
+ 
+Tool switches
+•	market sources → email
+•	reason: translate weekly assessment into team direction
+•	friction: low
+•	email → pricing tool
+•	reason: move from broad direction into detailed modeling
+•	friction: low
+ 
+Task 3.2: Model geography and opportunities in the pricing tool
+Goal
+Use the tool to build a working scenario for identifying action.
+Conditions
+•	After weekly direction is framed
+Variations
+•	Some weeks emphasize geography
+•	Some weeks emphasize list outputs
+Breakdowns
+•	Need to repeatedly set parameters without saved defaults
+•	Manual competitor and layer setup are cumbersome
+•	Hover, lasso, and inspection interactions conflict
+Operations
+Operation 3.2.1
+Action
+Open the pricing tool and set up a scenario using desired parameters
+Tools
+•	Pricing Tool
+Tool mediation
+•	Pricing Tool: primary, medium friction
+•	workaround: re-enter settings manually because saved defaults are limited or absent
+Automaticity
+•	Conscious
+Input from
+•	Email
+Output to
+•	Pricing Tool
+ 
+Operation 3.2.2
+Action
+Adjust competitors, layers, geography, and other views to make the model usable
+Tools
+•	Pricing Tool
+Tool mediation
+•	Pricing Tool: primary, high friction
+•	workaround: accept partial setup or spend extra time on manual configuration
+Automaticity
+•	Conscious
+Input from
+•	Pricing Tool
+Output to
+•	Pricing Tool
+ 
+Operation 3.2.3
+Action
+Inspect map and list outputs to identify where originators should focus
+Tools
+•	Pricing Tool
+Tool mediation
+•	Pricing Tool: primary, high friction
+•	workaround: switch quickly to export when in-tool interaction becomes frustrating
+Automaticity
+•	Conscious
+Input from
+•	Pricing Tool
+Output to
+•	Spreadsheet
+ 
+Tool switches
+•	Pricing tool → Spreadsheet
+•	Reason: in-tool output is not actionable enough for originator delivery
+•	Friction: medium
+ 
+Task 3.3: Refine and distribute originator-ready outputs outside the tool
+Goal
+Turn model outputs into usable execution artifacts.
+Conditions
+•	When outputs need to be packaged by originator or made more actionable
+Variations
+•	Broad group send
+•	Or originator-specific subsets
+Breakdowns
+•	The real workflow only becomes useful after manual spreadsheet work
+•	Delivery remains manual and fragmented
+Operations
+Operation 3.3.1
+Action
+Export results into a spreadsheet and reorganize, filter, and clean the data
+Tools
+•	Pricing Tool
+•	Spreadsheet
+Tool mediation
+•	Pricing Tool: secondary, medium friction
+•	workaround: use export as handoff into spreadsheet work
+•	Spreadsheet: primary, medium friction
+Automaticity
+•	Semi-automatic
+Input from
+•	Pricing Tool
+Output to
+•	Spreadsheet
+ 
+Operation 3.3.2
+Action
+Share refined lists or guidance with specific originators and support field execution
+Tools
+•	Spreadsheet
+•	Email
+•	Conversation
+Tool mediation
+•	Spreadsheet: primary, medium friction
+•	Links: secondary, low friction
+Automaticity
+•	Semi-automatic
+Input from
+•	Spreadsheet
+Output to
+•	None
+ 
+Tool switches
+•	Spreadsheet → email
+•	Reason: Deliver originator-specific outputs
+•	Friction: low
+ 
+Contradictions in Activity 3
+Secondary contradictions
+1.	Tool intended to support targeting vs spreadsheet still required
+The pricing tool is intended to support targeting, but spreadsheet work is still required to create usable originator-ready outputs.
+2.	Broad strategy communication vs disconnected execution support
+Weekly strategy starts as a broad communication activity, but detailed execution support lives in disconnected manual workflows.
+ 
+Activity 4: Review outcomes and update future pricing strategy
+Motive
+Learn whether strategy is working so future pricing and targeting decisions improve.
+Subject
+Merchant
+Community
+•	Originators
+•	Stakeholders affected by pricing strategy
+Rules
+•	Learn from outcomes without overreacting to noise
+•	Distinguish tool impact from market movement when possible
+Division of labor
+•	Merchant reconstructs outcomes manually because no unified feedback system closes the loop
+ 
+Task 4.1: Collect signals about what happened after recommendations were shared
+Goal
+Assemble evidence of outcomes.
+Conditions
+•	Next-day review
+•	Or whenever merchant wants feedback
+Variations
+•	Quick scan
+•	Deeper reconstruction
+Breakdowns
+•	Feedback is fragmented and hard to interpret
+•	High email volume turns feedback into noise
+Operations
+Operation 4.1.1
+Action
+Look for evidence of contract activity, response, or movement after prior recommendations
+Tools
+•	Email
+•	Contract activity
+•	Memory
+Tool mediation
+•	Contract: secondary, medium friction
+•	workaround: infer outcomes indirectly from scattered signals
+Automaticity
+•	Semi-automatic
+Input from
+•	None
+Output to
+•	Email
+ 
+Operation 4.1.2
+Action
+Review contract advisee emails and other notifications to infer outcomes
+Tools
+•	Email
+Tool mediation
+•	Links: secondary, low friction
+Automaticity
+•	Automatic
+Input from
+•	None
+Output to
+•	None
+ 
+Task 4.2: Relate outcome signals back to strategy and decide what to change
+Goal
+Close the loop and update future decisions.
+Conditions
+•	When the merchant believes there is enough signal to act
+Variations
+•	Hold course if evidence is weak
+•	Change bids or targeting if evidence seems strong enough
+Breakdowns
+•	No clean aggregated dashboard exists
+•	Tool impact is difficult to isolate from market movement
+Operations
+Operation 4.2.1
+Action
+Mentally connect partial outcome signals back to prior strategy, targeting, or pricing recommendations
+Tools
+•	Memory
+•	Notes
+•	Merchant judgment
+Tool mediation
+•	None
+Automaticity
+•	Conscious
+Input from
+•	Email
+Output to
+•	None
+ 
+Operation 4.2.2
+Action
+Adjust future strategy based on incomplete evidence about what worked
+Tools
+•	Merchant judgment
+Tool mediation
+•	None
+Automaticity
+•	Conscious
+Input from
+•	None
+Output to
+•	Pricing Tool
+ 
+Tool switches
+•	Email → Pricing tool
+•	Reason: use inferred feedback to inform next pricing cycle
+•	Friction: medium
+ 
+Contradictions in Activity 4
+Secondary contradiction
+1.	Need fast learning vs fragmented feedback
+The business needs fast learning from results, but outcome feedback is fragmented across email and memory rather than connected to prior decisions.
+ 
+Cross-activity summary
+Core merchant activity system
+The merchant workflow is not a single tool flow. It is an activity system with four major activities:
+1.	Calibrate daily grain buying position
+2.	Evaluate whether producer-level targeting is worth doing
+3.	Prepare and package weekly strategy for originators
+4.	Review outcomes and update future strategy
+Important lens-specific pattern
+The most important structural pattern is:
+•	Pre-tool cognition is substantial
+•	market framing
+•	risk assessment
+•	prioritization
+•	communication setup
+•	In-tool work is analytical but incomplete
+•	scenario inspection
+•	competitor comparison
+•	targeting attempts
+•	Post-tool work is where execution and learning really happen
+•	spreadsheet packaging
+•	emailing / talking to originators
+•	reading contract emails
+•	reconstructing outcomes
+That means the pricing tool currently supports only part of the full activity system.
+ 
+Highest-value contradictions surfaced by the lens
+1.	Useful logic vs hard interaction
+2.	Targeting is valuable vs targeting is too painful to use
+3.	Weekly strategy exists vs execution support is disconnected
+4.	Outcome learning is necessary vs feedback is fragmented
+5.	Tool should support actionability vs spreadsheet is still the real workbench
+ 
+Tool-mediated friction hotspots
+High-friction tools
+•	Pricing Tool
+•	Spreadsheet
+•	Contract-related feedback mechanisms
+Highest-cost tool switches
+•	Pricing tool → spreadsheet
+•	Spreadsheet → email
+•	Email → Pricing tool
+
+
