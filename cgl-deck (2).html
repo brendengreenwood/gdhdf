@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>cgl — A Developer Experience CLI for Cargill</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0e13;
+    --bg-surface: #13161d;
+    --bg-card: #181c25;
+    --green: #4ade80;
+    --green-dim: #22c55e;
+    --green-glow: rgba(74, 222, 128, 0.12);
+    --amber: #fbbf24;
+    --red: #f87171;
+    --text: #e2e8f0;
+    --text-dim: #8892a5;
+    --text-muted: #4a5568;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --border: #1e2433;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  .deck {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6vh 8vw;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+
+  .slide.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .slide-number {
+    position: fixed;
+    bottom: 3vh;
+    right: 4vw;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-muted);
+    z-index: 100;
+    letter-spacing: 1px;
+  }
+
+  /* TITLE SLIDE */
+  .title-slide .prefix {
+    font-family: var(--mono);
+    font-size: clamp(14px, 1.6vw, 18px);
+    color: var(--green);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .title-slide h1 {
+    font-family: var(--mono);
+    font-size: clamp(48px, 7vw, 96px);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.05;
+    margin-bottom: 24px;
+  }
+  .title-slide h1 span { color: var(--green); }
+  .title-slide .subtitle {
+    font-size: clamp(18px, 2vw, 26px);
+    color: var(--text-dim);
+    font-weight: 400;
+    max-width: 700px;
+    line-height: 1.5;
+  }
+  .title-slide .corner-tag {
+    position: absolute;
+    top: 5vh;
+    right: 5vw;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-muted);
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  /* PROBLEM SLIDES */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--green);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+  .slide h2 {
+    font-family: var(--sans);
+    font-size: clamp(32px, 4vw, 56px);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 32px;
+    max-width: 900px;
+  }
+  .slide h2 em {
+    font-style: normal;
+    color: var(--amber);
+  }
+  .slide h2 .red { color: var(--red); }
+  .slide p.body-text {
+    font-size: clamp(16px, 1.6vw, 22px);
+    color: var(--text-dim);
+    line-height: 1.7;
+    max-width: 720px;
+  }
+
+  /* PAIN LIST */
+  .pain-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    max-width: 900px;
+    margin-top: 8px;
+  }
+  .pain-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--red);
+    padding: 20px 24px;
+    border-radius: 6px;
+    font-size: 15px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    font-family: var(--sans);
+  }
+  .pain-item strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  /* STAT BLOCK */
+  .stat-row {
+    display: flex;
+    gap: 48px;
+    margin-top: 40px;
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+  }
+  .stat .number {
+    font-family: var(--mono);
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 700;
+    color: var(--red);
+    line-height: 1;
+  }
+  .stat .label {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin-top: 8px;
+  }
+
+  /* SOLUTION SLIDE */
+  .solution-cmd {
+    font-family: var(--mono);
+    font-size: clamp(28px, 3.5vw, 48px);
+    color: var(--green);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px 36px;
+    display: inline-block;
+    margin-bottom: 36px;
+    box-shadow: 0 0 40px var(--green-glow);
+  }
+  .solution-cmd .prompt { color: var(--text-muted); }
+
+  /* FEATURE GRID */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    max-width: 1000px;
+    margin-top: 8px;
+  }
+  .feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px 24px;
+  }
+  .feature-card .cmd {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--green);
+    margin-bottom: 12px;
+  }
+  .feature-card .desc {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* BEFORE/AFTER */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    max-width: 1000px;
+  }
+  .compare-col h3 {
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-col.before h3 { color: var(--red); }
+  .compare-col.after h3 { color: var(--green); }
+  .compare-col ol {
+    list-style: none;
+    counter-reset: steps;
+  }
+  .compare-col ol li {
+    counter-increment: steps;
+    font-size: 15px;
+    color: var(--text-dim);
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    line-height: 1.4;
+  }
+  .compare-col ol li::before {
+    content: counter(steps);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    min-width: 20px;
+  }
+  .compare-col.after ol li { color: var(--green-dim); }
+
+  /* TERMINAL DEMO */
+  .terminal-wrapper {
+    width: 100%;
+    max-width: 780px;
+    margin-top: 16px;
+  }
+  .terminal {
+    background: #0a0c10;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 8px 60px rgba(0,0,0,0.5), 0 0 60px var(--green-glow);
+  }
+  .terminal-bar {
+    background: var(--bg-surface);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .terminal-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+  }
+  .terminal-dot.r { background: #f87171; }
+  .terminal-dot.y { background: #fbbf24; }
+  .terminal-dot.g { background: #4ade80; }
+  .terminal-title {
+    flex: 1;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .terminal-body {
+    padding: 24px;
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.8;
+    min-height: 380px;
+    max-height: 380px;
+    overflow-y: auto;
+  }
+  .terminal-body::-webkit-scrollbar { width: 6px; }
+  .terminal-body::-webkit-scrollbar-track { background: transparent; }
+  .terminal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .term-line { white-space: pre-wrap; word-break: break-all; }
+  .term-prompt { color: var(--green); }
+  .term-cmd { color: var(--text); }
+  .term-info { color: var(--text-dim); }
+  .term-success { color: var(--green); }
+  .term-warn { color: var(--amber); }
+  .term-error { color: var(--red); }
+  .term-header { color: var(--green); font-weight: 700; }
+  .term-cursor {
+    display: inline-block;
+    width: 8px;
+    height: 17px;
+    background: var(--green);
+    vertical-align: text-bottom;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  .demo-controls {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .demo-btn {
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 10px 24px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .demo-btn:hover {
+    border-color: var(--green);
+    color: var(--green);
+    box-shadow: 0 0 20px var(--green-glow);
+  }
+  .demo-btn.primary {
+    background: var(--green);
+    color: var(--bg);
+    border-color: var(--green);
+    font-weight: 600;
+  }
+  .demo-btn.primary:hover {
+    background: var(--green-dim);
+    box-shadow: 0 0 30px var(--green-glow);
+  }
+
+  /* CLOSING SLIDE */
+  .closing-quote {
+    font-size: clamp(22px, 2.8vw, 38px);
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.5;
+    max-width: 800px;
+    font-style: italic;
+    border-left: 3px solid var(--green);
+    padding-left: 28px;
+    margin-bottom: 32px;
+  }
+
+  /* NAV BUTTONS */
+  .nav-buttons {
+    position: fixed;
+    bottom: 3vh;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 200;
+  }
+  .nav-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--text-dim);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-family: var(--mono);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .nav-btn:hover {
+    border-color: var(--green);
+    color: var(--green);
+    box-shadow: 0 0 16px var(--green-glow);
+  }
+  .nav-btn:active {
+    transform: scale(0.92);
+  }
+  .nav-btn:disabled {
+    opacity: 0.25;
+    cursor: default;
+    border-color: var(--border);
+    color: var(--text-muted);
+    box-shadow: none;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .slide { padding: 4vh 6vw; }
+    .pain-grid, .feature-grid, .compare-grid { grid-template-columns: 1fr; }
+    .stat-row { gap: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- SLIDE 1: TITLE -->
+  <div class="slide title-slide active" data-index="0">
+    <div class="corner-tag">Internal Concept<br>April 2026</div>
+    <div class="prefix">Proposal</div>
+    <h1><span>cgl</span></h1>
+    <div class="subtitle">A developer experience CLI for Cargill. One command to authenticate, install, configure, and diagnose.</div>
+  </div>
+
+  <!-- SLIDE 2: THE PROBLEM -->
+  <div class="slide" data-index="1">
+    <div class="section-label">The Problem</div>
+    <h2>Nobody owns the <em>seams</em> between teams.</h2>
+    <p class="body-text">Auth, registries, CI, proxy configs, internal SDKs — each team owns their slice of infrastructure. The developer is left to stitch it all together manually, every time, from scratch.</p>
+  </div>
+
+  <!-- SLIDE 3: PAIN POINTS -->
+  <div class="slide" data-index="2">
+    <div class="section-label">The Problem</div>
+    <h2>Getting set up is <span class="red">painful.</span></h2>
+    <div class="pain-grid">
+      <div class="pain-item"><strong>Registry tokens</strong> — dig through SharePoint for PAT setup docs that may or may not be current</div>
+      <div class="pain-item"><strong>Proxy configs</strong> — npm, git, pip, Docker, curl all need separate proxy settings</div>
+      <div class="pain-item"><strong>Auth boilerplate</strong> — every internal SDK requires its own auth wiring and env vars</div>
+      <div class="pain-item"><strong>VPN + certs</strong> — corporate CA certs need to be in the right trust stores for every tool</div>
+      <div class="pain-item"><strong>Tribal knowledge</strong> — the real docs are in Dave's head and a Teams thread from 2023</div>
+      <div class="pain-item"><strong>Repeat per project</strong> — none of this carries over. New repo, new pain.</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: THE COST -->
+  <div class="slide" data-index="3">
+    <div class="section-label">The Problem</div>
+    <h2>What does this actually <em>cost?</em></h2>
+    <p class="body-text">Every hour spent fighting configuration is an hour not spent building. The cumulative drag across every developer, every project, every quarter is significant.</p>
+    <div class="stat-row">
+      <div class="stat">
+        <div class="number">?</div>
+        <div class="label">Hours: laptop to first commit</div>
+      </div>
+      <div class="stat">
+        <div class="number">?</div>
+        <div class="label">Avg support pings per new dev</div>
+      </div>
+      <div class="stat">
+        <div class="number">?</div>
+        <div class="label">Teams threads asking "how do I..."</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: THE SOLUTION -->
+  <div class="slide" data-index="4">
+    <div class="section-label">The Solution</div>
+    <h2>Put a <em>front door</em> on it.</h2>
+    <div class="solution-cmd"><span class="prompt">$ </span>cgl install sprout</div>
+    <p class="body-text">A single CLI that authenticates once, resolves packages against internal registries, configures proxy and cert settings, and encodes tribal knowledge into repeatable commands. Distributed via Jamf as a single Rust binary. No bootstrapping problem.</p>
+  </div>
+
+  <!-- SLIDE 6: COMMANDS -->
+  <div class="slide" data-index="5">
+    <div class="section-label">The Solution</div>
+    <h2>Core commands</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="cmd">cgl setup</div>
+        <div class="desc">First-run environment bootstrap. Installs Homebrew, configures proxy, installs CA certs, sets up internal registry access. One command, fully configured machine.</div>
+      </div>
+      <div class="feature-card">
+        <div class="cmd">cgl auth login</div>
+        <div class="desc">OAuth via Azure AD. Opens browser, completes auth flow, caches token in system keychain. Silent refresh on all subsequent commands.</div>
+      </div>
+      <div class="feature-card">
+        <div class="cmd">cgl install [pkg]</div>
+        <div class="desc">Resolves against internal registry, handles auth transparently, pulls artifact, runs post-install hooks for config scaffolding.</div>
+      </div>
+      <div class="feature-card">
+        <div class="cmd">cgl doctor</div>
+        <div class="desc">Diagnostic check. Auth status, proxy config, registry access, Node/Python versions, VPN status. Replaces pinging Dave.</div>
+      </div>
+      <div class="feature-card">
+        <div class="cmd">cgl scaffold [tmpl]</div>
+        <div class="desc">Project templates with all internal plumbing pre-wired — CI config, auth boilerplate, linting, Docker, .npmrc.</div>
+      </div>
+      <div class="feature-card">
+        <div class="cmd">cgl update</div>
+        <div class="desc">Self-update and dependency refresh. When IT changes proxy settings, push a cgl update through Jamf — one command fixes everyone.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: BEFORE/AFTER -->
+  <div class="slide" data-index="6">
+    <div class="section-label">The Difference</div>
+    <h2>New developer, day one.</h2>
+    <div class="compare-grid">
+      <div class="compare-col before">
+        <h3>Before cgl</h3>
+        <ol>
+          <li>Search SharePoint for dev setup guide</li>
+          <li>Find outdated guide, ask on Teams</li>
+          <li>Get pointed to a different SharePoint page</li>
+          <li>Install Homebrew manually</li>
+          <li>Request registry PAT through ServiceNow</li>
+          <li>Wait for approval</li>
+          <li>Configure .npmrc with registry + token</li>
+          <li>Hit proxy error, spend 2 hours debugging</li>
+          <li>Ping Dave about CA cert trust store</li>
+          <li>Manually configure git, pip, Docker proxy</li>
+          <li>Install internal packages one by one</li>
+          <li>Scaffold project from stale template</li>
+          <li>First commit — day 2 or 3</li>
+        </ol>
+      </div>
+      <div class="compare-col after">
+        <h3>After cgl</h3>
+        <ol>
+          <li>Open laptop (cgl already via Jamf)</li>
+          <li>cgl setup</li>
+          <li>cgl auth login</li>
+          <li>cgl install sprout</li>
+          <li>First commit — day 1</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: DEMO -->
+  <div class="slide" data-index="7">
+    <div class="section-label">Demo</div>
+    <h2 style="margin-bottom:16px">See it work.</h2>
+    <div class="terminal-wrapper">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot r"></div>
+          <div class="terminal-dot y"></div>
+          <div class="terminal-dot g"></div>
+          <div class="terminal-title">Terminal — cgl demo</div>
+        </div>
+        <div class="terminal-body" id="term-body">
+          <div class="term-line"><span class="term-prompt">~ $ </span><span class="term-cursor"></span></div>
+        </div>
+      </div>
+      <div class="demo-controls">
+        <button class="demo-btn primary" id="btn-run">Run Demo</button>
+        <button class="demo-btn" id="btn-reset">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: CLOSING -->
+  <div class="slide" data-index="8">
+    <div class="section-label">What it Takes</div>
+    <h2>Scope</h2>
+    <p class="body-text" style="margin-bottom:36px">A single Rust binary. 2–3 engineers for 6–8 weeks to ship auth, install, and doctor. Distributed through existing Jamf infrastructure. No new security model — wraps the existing OAuth flow and registry permissions.</p>
+    <div class="closing-quote">"How long does it take a new Cargill developer to go from laptop to first commit?"<br><br>cgl makes the answer <span style="color:var(--green);font-style:normal;font-weight:700">minutes.</span></div>
+  </div>
+
+</div>
+
+<div class="slide-number" id="slide-num">1 / 9</div>
+<div class="nav-buttons">
+  <button class="nav-btn" id="btn-prev" disabled>←</button>
+  <button class="nav-btn" id="btn-next">→</button>
+</div>
+
+<script>
+  // SLIDE NAVIGATION
+  const slides = document.querySelectorAll('.slide');
+  const slideNum = document.getElementById('slide-num');
+  let current = 0;
+  const total = slides.length;
+
+  function goTo(n) {
+    if (n < 0 || n >= total) return;
+    slides[current].classList.remove('active');
+    current = n;
+    slides[current].classList.add('active');
+    slideNum.textContent = `${current + 1} / ${total}`;
+    document.getElementById('btn-prev').disabled = (current === 0);
+    document.getElementById('btn-next').disabled = (current === total - 1);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
+  });
+
+  // Touch navigation
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+  document.addEventListener('touchend', (e) => {
+    const diff = touchStartX - e.changedTouches[0].screenX;
+    if (Math.abs(diff) > 50) { diff > 0 ? goTo(current + 1) : goTo(current - 1); }
+  });
+
+  // TERMINAL DEMO
+  const termBody = document.getElementById('term-body');
+  let demoRunning = false;
+
+  const demoScript = [
+    // cgl setup
+    { type: 'type', text: 'cgl setup', delay: 60 },
+    { type: 'pause', ms: 400 },
+    { type: 'lines', cls: 'term-header', text: '\n⚡ cgl setup — Bootstrapping developer environment...\n', delay: 100 },
+    { type: 'lines', cls: 'term-info', text: '  Checking Homebrew...', delay: 300 },
+    { type: 'lines', cls: 'term-warn', text: '  ⚠ Homebrew not found. Installing...', delay: 800 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ Homebrew installed (4.2.18)', delay: 1200 },
+    { type: 'lines', cls: 'term-info', text: '  Configuring proxy settings...', delay: 300 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ npm proxy configured', delay: 200 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ git proxy configured', delay: 150 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ pip proxy configured', delay: 150 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ Docker daemon proxy configured', delay: 150 },
+    { type: 'lines', cls: 'term-info', text: '  Installing Cargill CA certificate...', delay: 400 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ CA cert added to system keychain', delay: 300 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ CA cert added to Node.js trust store', delay: 200 },
+    { type: 'lines', cls: 'term-info', text: '  Adding internal Homebrew tap...', delay: 300 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ cargill/internal tap configured', delay: 400 },
+    { type: 'lines', cls: 'term-success', text: '\n  ✅ Environment ready.\n', delay: 300 },
+
+    // cgl auth login
+    { type: 'prompt', delay: 500 },
+    { type: 'type', text: 'cgl auth login', delay: 60 },
+    { type: 'pause', ms: 400 },
+    { type: 'lines', cls: 'term-header', text: '\n🔐 cgl auth — Authenticating via Azure AD...\n', delay: 100 },
+    { type: 'lines', cls: 'term-info', text: '  Opening browser for SSO login...', delay: 600 },
+    { type: 'lines', cls: 'term-info', text: '  Waiting for authentication ···', delay: 1800 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ Authenticated as b.donnelly@cargill.com', delay: 300 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ Token cached in system keychain', delay: 200 },
+    { type: 'lines', cls: 'term-info', text: '  Token expires: 2026-04-13T04:22:00Z (auto-refresh enabled)', delay: 200 },
+    { type: 'lines', cls: 'term-success', text: '\n  ✅ Logged in.\n', delay: 300 },
+
+    // cgl install sprout
+    { type: 'prompt', delay: 500 },
+    { type: 'type', text: 'cgl install sprout', delay: 60 },
+    { type: 'pause', ms: 400 },
+    { type: 'lines', cls: 'term-header', text: '\n📦 cgl install — Resolving package...\n', delay: 100 },
+    { type: 'lines', cls: 'term-info', text: '  Registry: cargill.jfrog.io/internal-npm', delay: 300 },
+    { type: 'lines', cls: 'term-info', text: '  Auth: ✓ (token valid)', delay: 150 },
+    { type: 'lines', cls: 'term-info', text: '  Resolving @cargill/sprout@latest...', delay: 500 },
+    { type: 'lines', cls: 'term-info', text: '  Found @cargill/sprout@3.4.1', delay: 300 },
+    { type: 'lines', cls: 'term-info', text: '  Installing dependencies...', delay: 800 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ @cargill/sprout@3.4.1 installed', delay: 200 },
+    { type: 'lines', cls: 'term-info', text: '  Running post-install hooks...', delay: 400 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ ThemeProvider scaffolded in src/providers/', delay: 300 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ Cargill design tokens added to tailwind.config.js', delay: 200 },
+    { type: 'lines', cls: 'term-success', text: '\n  ✅ sprout ready. Import: @cargill/sprout/components\n', delay: 300 },
+
+    // cgl doctor
+    { type: 'prompt', delay: 500 },
+    { type: 'type', text: 'cgl doctor', delay: 60 },
+    { type: 'pause', ms: 400 },
+    { type: 'lines', cls: 'term-header', text: '\n🩺 cgl doctor — Running diagnostics...\n', delay: 100 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ Auth          Authenticated (b.donnelly@cargill.com)', delay: 200 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ Token         Valid (expires in 23h 58m)', delay: 150 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ Proxy         All tools configured', delay: 150 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ CA Cert       Trusted in 3/3 stores', delay: 150 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ Registry      cargill.jfrog.io reachable', delay: 150 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ Node          v20.11.1', delay: 150 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ Homebrew      4.2.18', delay: 150 },
+    { type: 'lines', cls: 'term-success', text: '  ✓ VPN           Connected (Minneapolis)', delay: 150 },
+    { type: 'lines', cls: 'term-success', text: '\n  ✅ All systems healthy. You\'re good to go.\n', delay: 300 },
+
+    { type: 'prompt', delay: 400 },
+    { type: 'cursor', delay: 0 },
+  ];
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  async function typeText(container, text, charDelay) {
+    const span = document.createElement('span');
+    span.className = 'term-cmd';
+    container.appendChild(span);
+    for (let i = 0; i < text.length; i++) {
+      span.textContent += text[i];
+      await sleep(charDelay);
+    }
+  }
+
+  async function runDemo() {
+    if (demoRunning) return;
+    demoRunning = true;
+    document.getElementById('btn-run').disabled = true;
+    termBody.innerHTML = '';
+
+    let currentLine = document.createElement('div');
+    currentLine.className = 'term-line';
+    currentLine.innerHTML = '<span class="term-prompt">~ $ </span>';
+    termBody.appendChild(currentLine);
+
+    for (const step of demoScript) {
+      if (!demoRunning) break;
+
+      if (step.type === 'type') {
+        await typeText(currentLine, step.text, step.delay);
+      } else if (step.type === 'pause') {
+        await sleep(step.ms);
+      } else if (step.type === 'lines') {
+        const line = document.createElement('div');
+        line.className = `term-line ${step.cls}`;
+        line.textContent = step.text;
+        termBody.appendChild(line);
+        termBody.scrollTop = termBody.scrollHeight;
+        await sleep(step.delay);
+      } else if (step.type === 'prompt') {
+        currentLine = document.createElement('div');
+        currentLine.className = 'term-line';
+        currentLine.innerHTML = '<span class="term-prompt">~ $ </span>';
+        termBody.appendChild(currentLine);
+        termBody.scrollTop = termBody.scrollHeight;
+        await sleep(step.delay);
+      } else if (step.type === 'cursor') {
+        const cursor = document.createElement('span');
+        cursor.className = 'term-cursor';
+        currentLine.appendChild(cursor);
+      }
+    }
+
+    document.getElementById('btn-run').disabled = false;
+    demoRunning = false;
+  }
+
+  function resetDemo() {
+    demoRunning = false;
+    termBody.innerHTML = '<div class="term-line"><span class="term-prompt">~ $ </span><span class="term-cursor"></span></div>';
+    document.getElementById('btn-run').disabled = false;
+  }
+
+  // Bind all buttons via addEventListener
+  document.getElementById('btn-prev').addEventListener('click', function() { goTo(current - 1); });
+  document.getElementById('btn-next').addEventListener('click', function() { goTo(current + 1); });
+  document.getElementById('btn-run').addEventListener('click', function() { runDemo(); });
+  document.getElementById('btn-reset').addEventListener('click', function() { resetDemo(); });
+</script>
+</body>
+</html>
