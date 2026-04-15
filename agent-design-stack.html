@@ -1,0 +1,1152 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Agent-Native Design Stack</title>
+    <style>
+      :root {
+        --sprout-color-white: #ffffff;
+        --sprout-color-green-100: #f5f9ed;
+        --sprout-color-green-200: #bde588;
+        --sprout-color-green-300: #81ab40;
+        --sprout-color-green-400: #00843d;
+        --sprout-color-green-700: #01632d;
+        --sprout-color-green-800: #03441f;
+        --sprout-color-green-900: #012912;
+        --sprout-color-neutral-300: #dbdddc;
+        --sprout-color-neutral-400: #9fa4a2;
+        --sprout-color-neutral-500: #707773;
+        --sprout-color-neutral-600: #58605c;
+        --sprout-color-neutral-700: #404945;
+        --sprout-color-neutral-800: #404945;
+        --sprout-color-neutral-900: #1c2722;
+        --sprout-color-neutral-1000: #101c16;
+        --sprout-color-ruby-red-100: #eb5655;
+        --sprout-color-sapphire-blue-100: #55a5eb;
+        --sprout-color-yolk-yellow-100: #fea800;
+        --sprout-shape-borderRadius: 4px;
+        --transition-interaction: 0.15s;
+        --transition-standard: 0.35s;
+        --sprout-font-sans:
+          HelveticaNowForCargill, Helvetica, Arial, sans-serif;
+        --sprout-font-serif: BigCaslonForCargill, "Big Caslon", Georgia, serif;
+        --sprout-font-micro:
+          HelveticaNowMicroForCargill, Helvetica, Arial, sans-serif;
+
+        --bg: #101c16;
+        --bg-surface: #1c2722;
+        --bg-raised: #404945;
+        --text-primary: #ffffff;
+        --text-secondary: #9fa4a2;
+        --text-heading: #bde588;
+        --border: #404945;
+        --border-green: #01632d;
+        --accent: #bde588;
+        --accent-mid: #81ab40;
+        --accent-deep: #00843d;
+        --red: #eb5655;
+        --blue: #55a5eb;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        height: 100%;
+        background: var(--bg);
+        color: var(--text-primary);
+        font-family: var(--sprout-font-sans);
+        overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .deck {
+        width: 100vw;
+        height: 100vh;
+        position: relative;
+      }
+
+      .slide {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 56px 80px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--transition-standard) ease;
+      }
+      .slide.active {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      .progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 2px;
+        background: var(--accent);
+        transition: width var(--transition-standard) ease;
+        z-index: 100;
+      }
+
+      .slide-label {
+        position: fixed;
+        top: 28px;
+        right: 36px;
+        font-family: var(--sprout-font-micro);
+        font-size: 10px;
+        color: var(--text-secondary);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        z-index: 100;
+      }
+
+      .nav {
+        position: fixed;
+        bottom: 32px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        z-index: 100;
+      }
+
+      .nav button {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        font-family: var(--sprout-font-micro);
+        font-size: 10px;
+        padding: 8px 20px;
+        cursor: pointer;
+        letter-spacing: 0.1em;
+        border-radius: var(--sprout-shape-borderRadius);
+        transition: all var(--transition-interaction);
+      }
+      .nav button:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--sprout-color-green-900);
+      }
+
+      .nav .counter {
+        font-family: var(--sprout-font-micro);
+        font-size: 10px;
+        color: var(--text-secondary);
+        min-width: 44px;
+        text-align: center;
+      }
+
+      .section-title {
+        font-family: var(--sprout-font-micro);
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 32px;
+        text-align: center;
+      }
+
+      .tag {
+        font-family: var(--sprout-font-micro);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: var(--sprout-shape-borderRadius);
+        display: inline-block;
+        margin-bottom: 14px;
+      }
+
+      /* ── S1 ── */
+      #s1 {
+        align-items: flex-start;
+      }
+
+      #s1 .grid {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      #s1 .grid::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(#1c2722 1px, transparent 1px),
+          linear-gradient(90deg, #1c2722 1px, transparent 1px);
+        background-size: 56px 56px;
+        opacity: 0.5;
+      }
+      #s1 .grid::after {
+        content: "";
+        position: absolute;
+        right: -120px;
+        bottom: -120px;
+        width: 640px;
+        height: 640px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(189, 229, 136, 0.06) 0%,
+          transparent 65%
+        );
+      }
+
+      #s1 .eyebrow {
+        font-family: var(--sprout-font-micro);
+        font-size: 11px;
+        color: var(--accent);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        margin-bottom: 28px;
+        position: relative;
+        z-index: 1;
+      }
+
+      #s1 h1 {
+        font-family: var(--sprout-font-serif);
+        font-size: clamp(48px, 6.5vw, 86px);
+        font-weight: 400;
+        line-height: 1;
+        color: var(--text-primary);
+        max-width: 760px;
+        margin-bottom: 40px;
+        position: relative;
+        z-index: 1;
+      }
+      #s1 h1 em {
+        color: var(--accent);
+        font-style: italic;
+      }
+
+      #s1 .subtitle {
+        font-family: var(--sprout-font-sans);
+        font-size: 13px;
+        color: var(--text-secondary);
+        line-height: 1.85;
+        max-width: 400px;
+        border-left: 2px solid var(--sprout-color-green-800);
+        padding-left: 18px;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* ── S2 ── */
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        width: 100%;
+        max-width: 860px;
+        border-radius: var(--sprout-shape-borderRadius);
+        overflow: hidden;
+      }
+
+      .prob-card {
+        background: var(--bg);
+        padding: 34px 30px;
+      }
+      .prob-card.bad .tag {
+        color: var(--red);
+        background: rgba(235, 86, 85, 0.08);
+      }
+      .prob-card.good .tag {
+        color: var(--accent);
+        background: rgba(189, 229, 136, 0.08);
+      }
+
+      .prob-card h3 {
+        font-family: var(--sprout-font-serif);
+        font-size: 24px;
+        font-weight: 400;
+        line-height: 1.2;
+        margin-bottom: 16px;
+        color: var(--text-primary);
+      }
+      .prob-card.good h3 {
+        color: var(--text-heading);
+      }
+
+      .prob-card p {
+        font-family: var(--sprout-font-sans);
+        font-size: 12px;
+        color: var(--text-secondary);
+        line-height: 1.9;
+      }
+      .strike {
+        text-decoration: line-through;
+        opacity: 0.4;
+      }
+
+      /* ── S3 ── */
+      .stack-diagram {
+        width: 100%;
+        max-width: 680px;
+        border: 1px solid var(--border);
+        border-radius: var(--sprout-shape-borderRadius);
+        overflow: hidden;
+      }
+
+      .stack-layer {
+        display: flex;
+        align-items: stretch;
+        border-bottom: 1px solid var(--border);
+        transition: background var(--transition-interaction);
+      }
+      .stack-layer:last-child {
+        border-bottom: none;
+      }
+      .stack-layer:hover {
+        background: var(--bg-surface);
+      }
+
+      .layer-num {
+        font-family: var(--sprout-font-micro);
+        font-size: 10px;
+        color: var(--text-secondary);
+        padding: 22px 16px;
+        border-right: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+      }
+
+      .layer-content {
+        padding: 22px 22px;
+        flex: 1;
+      }
+      .layer-name {
+        font-family: var(--sprout-font-sans);
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      .layer-desc {
+        font-family: var(--sprout-font-sans);
+        font-size: 11px;
+        color: var(--text-secondary);
+        line-height: 1.75;
+      }
+
+      .layer-pill {
+        font-family: var(--sprout-font-micro);
+        font-size: 9px;
+        padding: 22px 12px;
+        display: flex;
+        align-items: center;
+        border-left: 1px solid var(--border);
+        writing-mode: vertical-rl;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        opacity: 0.55;
+      }
+
+      .l1 .layer-name,
+      .l1 .layer-pill {
+        color: var(--accent);
+      }
+      .l2 .layer-name,
+      .l2 .layer-pill {
+        color: var(--accent-mid);
+      }
+      .l3 .layer-name,
+      .l3 .layer-pill {
+        color: var(--blue);
+      }
+      .l4 .layer-name,
+      .l4 .layer-pill {
+        color: var(--text-secondary);
+      }
+
+      /* ── S4 ── */
+      .tool-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        border-radius: var(--sprout-shape-borderRadius);
+        overflow: hidden;
+        width: 100%;
+        max-width: 820px;
+      }
+
+      .tool-cell {
+        background: var(--bg);
+        padding: 22px 20px;
+        transition: background var(--transition-interaction);
+      }
+      .tool-cell:hover {
+        background: var(--bg-surface);
+      }
+
+      .tool-cell .cmd {
+        font-family: var(--sprout-font-micro);
+        font-size: 11px;
+        color: var(--accent);
+        margin-bottom: 7px;
+        display: block;
+      }
+      .tool-cell .desc {
+        font-family: var(--sprout-font-sans);
+        font-size: 11px;
+        color: var(--text-secondary);
+        line-height: 1.65;
+      }
+      .tool-cell .preview {
+        margin-top: 10px;
+        padding: 8px 10px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--sprout-shape-borderRadius);
+        font-family: var(--sprout-font-micro);
+        font-size: 9px;
+        color: var(--accent-mid);
+        line-height: 1.6;
+      }
+
+      /* ── S5 ── */
+      .paper-flow {
+        display: flex;
+        width: 100%;
+        max-width: 860px;
+        border: 1px solid var(--border);
+        border-radius: var(--sprout-shape-borderRadius);
+        overflow: hidden;
+      }
+
+      .paper-col {
+        flex: 1;
+        padding: 28px 24px;
+        border-right: 1px solid var(--border);
+      }
+      .paper-col:last-child {
+        border-right: none;
+      }
+
+      .col-label {
+        font-family: var(--sprout-font-micro);
+        font-size: 9px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        margin-bottom: 14px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .col-title {
+        font-family: var(--sprout-font-sans);
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 12px;
+      }
+
+      .paper-col ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .paper-col ul li {
+        font-family: var(--sprout-font-sans);
+        font-size: 11px;
+        color: var(--text-secondary);
+        line-height: 1.65;
+        padding-left: 14px;
+        position: relative;
+      }
+      .paper-col ul li::before {
+        content: "→";
+        position: absolute;
+        left: 0;
+        color: var(--accent-deep);
+        font-size: 10px;
+      }
+
+      /* ── S6 ── */
+      .loop-wrap {
+        width: 100%;
+        max-width: 820px;
+      }
+
+      .loop-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        border-bottom: none;
+      }
+      .loop-row:last-of-type {
+        border-bottom: 1px solid var(--border);
+        border-radius: 0 0 0 0;
+      }
+
+      .loop-step {
+        background: var(--bg);
+        padding: 20px 22px;
+        transition: background var(--transition-interaction);
+      }
+      .loop-step:hover {
+        background: var(--bg-surface);
+      }
+
+      .step-n {
+        font-family: var(--sprout-font-micro);
+        font-size: 9px;
+        color: var(--text-secondary);
+        margin-bottom: 5px;
+        letter-spacing: 0.1em;
+      }
+      .step-title {
+        font-family: var(--sprout-font-sans);
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+      .step-body {
+        font-family: var(--sprout-font-sans);
+        font-size: 11px;
+        color: var(--text-secondary);
+        line-height: 1.7;
+      }
+
+      .ls-a .step-title {
+        color: var(--accent);
+      }
+      .ls-b .step-title {
+        color: var(--accent-mid);
+      }
+      .ls-c .step-title {
+        color: var(--blue);
+      }
+      .ls-d .step-title {
+        color: var(--text-primary);
+      }
+
+      .loop-callout {
+        padding: 14px 20px;
+        background: var(--sprout-color-green-900);
+        border: 1px solid var(--border-green);
+        border-top: none;
+        border-radius: 0 0 var(--sprout-shape-borderRadius)
+          var(--sprout-shape-borderRadius);
+      }
+      .loop-callout p {
+        font-family: var(--sprout-font-sans);
+        font-size: 12px;
+        color: var(--text-secondary);
+        line-height: 1.8;
+      }
+      .loop-callout strong {
+        color: var(--accent);
+        font-weight: 400;
+      }
+
+      /* ── S7 ── */
+      .vs-grid {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        width: 100%;
+        max-width: 860px;
+        align-items: stretch;
+      }
+
+      .vs-side {
+        border: 1px solid var(--border);
+        padding: 28px 26px;
+        border-radius: var(--sprout-shape-borderRadius);
+      }
+      .vs-side.new {
+        border-color: var(--border-green);
+        background: rgba(1, 41, 18, 0.25);
+      }
+
+      .vs-side.old .tag {
+        color: var(--red);
+        background: rgba(235, 86, 85, 0.08);
+      }
+      .vs-side.new .tag {
+        color: var(--accent);
+        background: rgba(189, 229, 136, 0.08);
+      }
+
+      .vs-side h3 {
+        font-family: var(--sprout-font-serif);
+        font-size: 20px;
+        font-weight: 400;
+        line-height: 1.25;
+        margin-bottom: 18px;
+      }
+      .vs-side.old h3 {
+        color: var(--text-primary);
+      }
+      .vs-side.new h3 {
+        color: var(--text-heading);
+      }
+
+      .vs-side ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+      }
+      .vs-side ul li {
+        font-family: var(--sprout-font-sans);
+        font-size: 11px;
+        color: var(--text-secondary);
+        line-height: 1.65;
+        padding-left: 16px;
+        position: relative;
+      }
+      .vs-side.old ul li::before {
+        content: "✗";
+        position: absolute;
+        left: 0;
+        color: var(--red);
+        opacity: 0.7;
+      }
+      .vs-side.new ul li::before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: var(--accent);
+      }
+
+      .vs-mid {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 18px;
+        font-family: var(--sprout-font-serif);
+        font-size: 22px;
+        color: var(--text-secondary);
+        font-style: italic;
+      }
+
+      /* ── S8 ── */
+      #s8 {
+        align-items: flex-start;
+      }
+
+      #s8 .grid {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      #s8 .grid::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(#1c2722 1px, transparent 1px),
+          linear-gradient(90deg, #1c2722 1px, transparent 1px);
+        background-size: 56px 56px;
+        opacity: 0.5;
+      }
+      #s8 .grid::after {
+        content: "";
+        position: absolute;
+        left: -100px;
+        top: -100px;
+        width: 480px;
+        height: 480px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(189, 229, 136, 0.05) 0%,
+          transparent 65%
+        );
+      }
+
+      #s8 .inner {
+        position: relative;
+        z-index: 1;
+      }
+      #s8 .eyebrow {
+        font-family: var(--sprout-font-micro);
+        font-size: 10px;
+        color: var(--accent);
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+      }
+
+      #s8 h2 {
+        font-family: var(--sprout-font-serif);
+        font-size: clamp(36px, 4.5vw, 58px);
+        font-weight: 400;
+        line-height: 1.1;
+        color: var(--text-primary);
+        max-width: 540px;
+        margin-bottom: 32px;
+      }
+      #s8 h2 em {
+        color: var(--accent);
+        font-style: italic;
+      }
+
+      .build-list {
+        display: flex;
+        flex-direction: column;
+        max-width: 500px;
+      }
+      .build-item {
+        display: flex;
+        gap: 16px;
+        padding: 13px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .build-item:first-child {
+        border-top: 1px solid var(--border);
+      }
+      .b-num {
+        font-family: var(--sprout-font-micro);
+        font-size: 10px;
+        color: var(--accent);
+        min-width: 18px;
+        margin-top: 1px;
+      }
+      .b-text {
+        font-family: var(--sprout-font-sans);
+        font-size: 12px;
+        color: var(--text-secondary);
+        line-height: 1.65;
+      }
+      .b-text strong {
+        color: var(--text-primary);
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="progress" id="progress"></div>
+    <div class="slide-label" id="slideLabel"></div>
+
+    <div class="deck">
+      <div class="slide active" id="s1">
+        <div class="grid"></div>
+        <div class="eyebrow">Design × Agents</div>
+        <h1>The <em>Agent-Native</em><br />Design Stack</h1>
+        <p class="subtitle">
+          What it looks like when your design system is built for machines to
+          use — not just humans.
+        </p>
+      </div>
+
+      <div class="slide" id="s2">
+        <div class="section-title">The Problem</div>
+        <div class="two-col">
+          <div class="prob-card bad">
+            <span class="tag">Current State</span>
+            <h3>Agents guess at your design system</h3>
+            <p>
+              The model generates a component from memory.<br /><br />
+              <span class="strike">Wrong token values.</span><br />
+              <span class="strike">Deprecated components.</span><br />
+              <span class="strike">Hardcoded hex colors.</span><br /><br />
+              Compliance enforced after the fact — if at all. Design system
+              adoption requires human discipline.
+            </p>
+          </div>
+          <div class="prob-card good">
+            <span class="tag">Better Model</span>
+            <h3>Agents query before they generate</h3>
+            <p>
+              The agent calls into the design system first.<br /><br />
+              ✓ Real token values.<br />
+              ✓ Current component APIs.<br />
+              ✓ Usage rules and rationale.<br /><br />
+              Non-compliant output becomes structurally harder to produce.
+              Compliance is architectural, not disciplinary.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide" id="s3">
+        <div class="section-title">The Stack</div>
+        <div class="stack-diagram">
+          <div class="stack-layer l1">
+            <div class="layer-num">01</div>
+            <div class="layer-content">
+              <div class="layer-name">SKILL.md</div>
+              <div class="layer-desc">
+                Tells the agent when to reach for the design system and how to
+                interpret what comes back. The connective tissue between intent
+                and execution.
+              </div>
+            </div>
+            <div class="layer-pill">Intent</div>
+          </div>
+          <div class="stack-layer l2">
+            <div class="layer-num">02</div>
+            <div class="layer-content">
+              <div class="layer-name">Sprout MCP</div>
+              <div class="layer-desc">
+                Structured, queryable interface exposing tokens, components,
+                usage rules, and rationale. The agent queries this before
+                generating anything.
+              </div>
+            </div>
+            <div class="layer-pill">Query</div>
+          </div>
+          <div class="stack-layer l3">
+            <div class="layer-num">03</div>
+            <div class="layer-content">
+              <div class="layer-name">Paper MCP</div>
+              <div class="layer-desc">
+                Code-native canvas where agents read and write actual HTML/CSS.
+                The execution surface — grounded by what Sprout returned.
+              </div>
+            </div>
+            <div class="layer-pill">Execute</div>
+          </div>
+          <div class="stack-layer l4">
+            <div class="layer-num">04</div>
+            <div class="layer-content">
+              <div class="layer-name">Sprout CLI</div>
+              <div class="layer-desc">
+                Same Sprout logic, shell-invokable. Runs in CI pipelines, audit
+                scripts, token sync — anything outside a live agent session.
+              </div>
+            </div>
+            <div class="layer-pill">Pipeline</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide" id="s4">
+        <div class="section-title">Sprout MCP — What It Exposes</div>
+        <div class="tool-grid">
+          <div class="tool-cell">
+            <span class="cmd">get_token(name)</span>
+            <div class="desc">
+              Returns resolved token value — semantic or raw. Agent uses real
+              values instead of guessing.
+            </div>
+            <div class="preview">
+              { "name": "color.primary",<br />&nbsp;&nbsp;"value": "#00843d",<br />&nbsp;&nbsp;"type":
+              "semantic" }
+            </div>
+          </div>
+          <div class="tool-cell">
+            <span class="cmd">list_components()</span>
+            <div class="desc">
+              Returns all current components with status flags — active,
+              deprecated, experimental.
+            </div>
+            <div class="preview">
+              [ { "name": "DataTable",<br />&nbsp;&nbsp;&nbsp;&nbsp;"status":
+              "active" },<br />&nbsp;&nbsp;{ "name": "OldGrid",<br />&nbsp;&nbsp;&nbsp;&nbsp;"status":
+              "deprecated" } ]
+            </div>
+          </div>
+          <div class="tool-cell">
+            <span class="cmd">get_usage(component)</span>
+            <div class="desc">
+              Returns prop types, required fields, usage examples, and known
+              anti-patterns.
+            </div>
+            <div class="preview">
+              { "props": [...],<br />&nbsp;&nbsp;"examples": [...],<br />&nbsp;&nbsp;"avoid":
+              [...] }
+            </div>
+          </div>
+          <div class="tool-cell">
+            <span class="cmd">get_rationale(id)</span>
+            <div class="desc">
+              Why this token or pattern exists. Helps agents make judgment calls
+              that respect the system's intent.
+            </div>
+            <div class="preview">
+              { "rationale": "Maintains<br />&nbsp;&nbsp;4.5:1 contrast
+              across<br />&nbsp;&nbsp;all surface types" }
+            </div>
+          </div>
+          <div class="tool-cell">
+            <span class="cmd">validate_markup(tree)</span>
+            <div class="desc">
+              Pass a component tree, get back compliance issues before anything
+              ships.
+            </div>
+            <div class="preview">
+              { "issues": [{<br />&nbsp;&nbsp;"type": "hardcoded-color",<br />&nbsp;&nbsp;"node":
+              "div.header" }] }
+            </div>
+          </div>
+          <div class="tool-cell">
+            <span class="cmd">suggest_component(intent)</span>
+            <div class="desc">
+              Describe what you're building. Returns the closest Sprout match
+              with confidence score.
+            </div>
+            <div class="preview">
+              { "match": "StatusBadge",<br />&nbsp;&nbsp;"confidence": 0.91,<br />&nbsp;&nbsp;"alt":
+              "Chip" }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide" id="s5">
+        <div class="section-title">Paper — The Execution Surface</div>
+        <div style="text-align: center; margin-bottom: 22px">
+          <div
+            style="
+              font-family: var(--sprout-font-serif);
+              font-size: 34px;
+              color: var(--text-heading);
+              font-style: italic;
+              margin-bottom: 6px;
+            "
+          >
+            Code-native canvas.
+          </div>
+          <p
+            style="
+              font-family: var(--sprout-font-sans);
+              font-size: 12px;
+              color: var(--text-secondary);
+            "
+          >
+            What you design is actual HTML/CSS. Nothing gets lost in
+            translation.
+          </p>
+        </div>
+        <div class="paper-flow">
+          <div class="paper-col">
+            <div class="col-label">What agents can read</div>
+            <div class="col-title">Context</div>
+            <ul>
+              <li>Existing frames and layouts</li>
+              <li>Current styles and token bindings</li>
+              <li>Component structure as JSX</li>
+              <li>Tailwind output of any node</li>
+              <li>Screenshots for visual context</li>
+            </ul>
+          </div>
+          <div class="paper-col">
+            <div class="col-label">What agents can write</div>
+            <div class="col-title">Generation</div>
+            <ul>
+              <li>Create new frames from scratch</li>
+              <li>Update styles on existing elements</li>
+              <li>Set text content and copy</li>
+              <li>Generate responsive variants</li>
+              <li>Apply Sprout tokens directly</li>
+            </ul>
+          </div>
+          <div class="paper-col">
+            <div class="col-label">Why it matters</div>
+            <div class="col-title">The difference</div>
+            <ul>
+              <li>Output is real code, not a mockup</li>
+              <li>No handoff — canvas to codebase directly</li>
+              <li>Agent work can be reviewed visually</li>
+              <li>Figma AI sees layer names. Paper sees the web.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide" id="s6">
+        <div class="section-title">How It Works Together</div>
+        <div class="loop-wrap">
+          <div class="loop-row">
+            <div class="loop-step ls-a">
+              <div class="step-n">01 — Read skill</div>
+              <div class="step-title">Agent reads SKILL.md</div>
+              <div class="step-body">
+                Learns when to query Sprout, how to interpret output, what
+                deprecated flags mean, how to handle no-match.
+              </div>
+            </div>
+            <div class="loop-step ls-b">
+              <div class="step-n">02 — Query system</div>
+              <div class="step-title">Agent queries Sprout MCP</div>
+              <div class="step-body">
+                Lists components, fetches tokens, gets usage rules for the
+                specific pattern it needs to build.
+              </div>
+            </div>
+          </div>
+          <div class="loop-row">
+            <div class="loop-step ls-c">
+              <div class="step-n">03 — Generate</div>
+              <div class="step-title">Agent writes to Paper</div>
+              <div class="step-body">
+                Creates the component grounded in real Sprout token values and
+                component APIs. Output is HTML/CSS, not a Figma layer.
+              </div>
+            </div>
+            <div class="loop-step ls-d">
+              <div class="step-n">04 — Validate</div>
+              <div class="step-title">Agent self-validates</div>
+              <div class="step-body">
+                Calls validate_markup() before finishing. Catches compliance
+                issues without a human in the loop.
+              </div>
+            </div>
+          </div>
+          <div class="loop-callout">
+            <p>
+              <strong>The key insight:</strong> Design system compliance stops
+              being a discipline problem. It becomes an architectural property
+              of how agents are wired up. The agent can't easily generate
+              non-compliant UI if it's querying Sprout first.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide" id="s7">
+        <div class="section-title">vs. Claude in Figma</div>
+        <div class="vs-grid">
+          <div class="vs-side old">
+            <span class="tag">Claude in Figma</span>
+            <h3>A prompt box that knows your layer names</h3>
+            <ul>
+              <li>Figma's proprietary format — not real code</li>
+              <li>No design system awareness by default</li>
+              <li>
+                Generates from model memory — wrong tokens, hallucinated props
+              </li>
+              <li>
+                Output still requires handoff — translation loss inevitable
+              </li>
+              <li>Compliance enforced by humans after the fact</li>
+              <li>Limited to whatever Figma chooses to expose</li>
+            </ul>
+          </div>
+          <div class="vs-mid">vs</div>
+          <div class="vs-side new">
+            <span class="tag">Sprout MCP + Paper</span>
+            <h3>An agent that queries before it generates</h3>
+            <ul>
+              <li>Real HTML/CSS — what you see is what ships</li>
+              <li>Grounded in your actual design system at query time</li>
+              <li>Token values, component APIs, usage rules all verified</li>
+              <li>Canvas to codebase directly — no translation step</li>
+              <li>Compliance architectural, not disciplinary</li>
+              <li>You own the interface layer — MCP, CLI, SKILL.md</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide" id="s8">
+        <div class="grid"></div>
+        <div class="inner">
+          <div class="eyebrow">Build Order</div>
+          <h2>
+            Start with the <em>core.</em><br />Everything else is a wrapper.
+          </h2>
+          <div class="build-list">
+            <div class="build-item">
+              <div class="b-num">01</div>
+              <div class="b-text">
+                <strong>Core library</strong> — query logic for Sprout tokens,
+                components, rules. This is the real work.
+              </div>
+            </div>
+            <div class="build-item">
+              <div class="b-num">02</div>
+              <div class="b-text">
+                <strong>CLI wrapper</strong> — thin shell interface. Good for
+                pipelines, audits, CI.
+              </div>
+            </div>
+            <div class="build-item">
+              <div class="b-num">03</div>
+              <div class="b-text">
+                <strong>MCP server</strong> — thin MCP interface over the same
+                core. Same logic, different transport.
+              </div>
+            </div>
+            <div class="build-item">
+              <div class="b-num">04</div>
+              <div class="b-text">
+                <strong>SKILL.md</strong> — tells agents when and how.
+                Documentation that agents actually read.
+              </div>
+            </div>
+            <div class="build-item">
+              <div class="b-num">05</div>
+              <div class="b-text">
+                <strong>Paper integration</strong> — point agents at Paper as
+                the canvas. The execution surface closes the loop.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button id="prev">← prev</button>
+      <span class="counter" id="counter">1 / 8</span>
+      <button id="next">next →</button>
+    </nav>
+
+    <script>
+      const slides = document.querySelectorAll(".slide");
+      const total = slides.length;
+      let current = 0;
+      const labels = [
+        "Introduction",
+        "The Problem",
+        "The Stack",
+        "Sprout MCP",
+        "Paper MCP",
+        "The Loop",
+        "vs. Figma",
+        "Build Order",
+      ];
+
+      function go(n) {
+        slides[current].classList.remove("active");
+        current = Math.max(0, Math.min(total - 1, n));
+        slides[current].classList.add("active");
+        document.getElementById("counter").textContent =
+          `${current + 1} / ${total}`;
+        document.getElementById("progress").style.width =
+          `${((current + 1) / total) * 100}%`;
+        document.getElementById("slideLabel").textContent = labels[current];
+      }
+
+      document
+        .getElementById("next")
+        .addEventListener("click", () => go(current + 1));
+      document
+        .getElementById("prev")
+        .addEventListener("click", () => go(current - 1));
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") go(current + 1);
+        if (e.key === "ArrowLeft" || e.key === "ArrowUp") go(current - 1);
+      });
+
+      go(0);
+    </script>
+  </body>
+</html>
