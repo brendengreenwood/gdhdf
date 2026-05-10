@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#ffd6e0" />
+<title>To-Call List</title>
+<style>
+  :root {
+    --bg-1: #ffe4ec;
+    --bg-2: #e7e0ff;
+    --bg-3: #d8f1ff;
+    --card: #ffffff;
+    --ink: #2b2140;
+    --ink-soft: #6c6390;
+    --accent: #ff7aa2;
+    --accent-2: #9a7bff;
+    --mint: #7fd8b0;
+    --peach: #ffb88c;
+    --lemon: #ffd86b;
+    --sky: #79c8ff;
+    --lilac: #c8a8ff;
+    --rose: #ff9bb8;
+    --shadow: 0 18px 40px rgba(70, 40, 110, 0.15);
+    --shadow-sm: 0 6px 16px rgba(70, 40, 110, 0.10);
+    --radius-lg: 28px;
+    --radius-md: 18px;
+    --radius-sm: 12px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Inter, system-ui, sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background:
+      radial-gradient(120% 80% at 0% 0%, var(--bg-1) 0%, transparent 60%),
+      radial-gradient(120% 80% at 100% 0%, var(--bg-3) 0%, transparent 55%),
+      radial-gradient(140% 90% at 50% 100%, var(--bg-2) 0%, transparent 60%),
+      #faf6ff;
+  }
+
+  /* Phone frame – on small screens it fills the viewport */
+  .phone {
+    width: 100%;
+    max-width: 390px;
+    min-height: 760px;
+    background: linear-gradient(180deg, #fff7fb 0%, #f4efff 100%);
+    border-radius: 44px;
+    box-shadow: var(--shadow), inset 0 0 0 8px #1b1430;
+    padding: 18px 18px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  @media (max-width: 440px) {
+    body { padding: 0; }
+    .phone {
+      max-width: none;
+      min-height: 100dvh;
+      border-radius: 0;
+      box-shadow: none;
+      padding: 14px 14px calc(28px + env(safe-area-inset-bottom));
+    }
+    .notch { display: none; }
+  }
+
+  .notch {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110px;
+    height: 26px;
+    background: #1b1430;
+    border-radius: 0 0 18px 18px;
+    z-index: 5;
+  }
+
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 18px 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .status-bar .icons { display: flex; gap: 6px; align-items: center; }
+  .status-bar .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--ink); }
+  .status-bar .battery {
+    width: 22px; height: 11px; border: 1.5px solid var(--ink); border-radius: 3px; position: relative;
+  }
+  .status-bar .battery::after {
+    content: ""; position: absolute; right: -3px; top: 2px; width: 2px; height: 5px; background: var(--ink); border-radius: 1px;
+  }
+  .status-bar .battery::before {
+    content: ""; position: absolute; left: 1px; top: 1px; bottom: 1px; width: 70%; background: var(--ink); border-radius: 1.5px;
+  }
+
+  /* Header */
+  .header {
+    padding: 8px 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .hello {
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .hello .day {
+    font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); font-weight: 700;
+  }
+  .hello h1 {
+    margin: 0; font-size: 26px; line-height: 1.1; font-weight: 800;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hello h1 .wave { display: inline-block; transform-origin: 70% 70%; animation: wave 2.4s ease-in-out infinite; }
+  @keyframes wave {
+    0%, 60%, 100% { transform: rotate(0); }
+    10% { transform: rotate(14deg); }
+    20% { transform: rotate(-8deg); }
+    30% { transform: rotate(14deg); }
+    40% { transform: rotate(-4deg); }
+    50% { transform: rotate(10deg); }
+  }
+  .avatar-me {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--peach), var(--accent));
+    display: grid; place-items: center;
+    color: white; font-weight: 800; font-size: 16px;
+    box-shadow: var(--shadow-sm);
+    border: 3px solid white;
+  }
+
+  /* Progress card */
+  .progress {
+    margin: 6px 8px 18px;
+    background: linear-gradient(135deg, #ffd6e0 0%, #e1d4ff 100%);
+    border-radius: var(--radius-lg);
+    padding: 18px 18px 16px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .progress::before {
+    content: "";
+    position: absolute; right: -20px; top: -30px;
+    width: 130px; height: 130px;
+    background: radial-gradient(circle at 30% 30%, #fff8 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .progress h2 {
+    margin: 0; font-size: 15px; font-weight: 700; color: var(--ink);
+  }
+  .progress p {
+    margin: 4px 0 14px; font-size: 13px; color: var(--ink-soft);
+  }
+  .progress .bar {
+    height: 10px; background: #ffffffaa; border-radius: 999px; overflow: hidden;
+  }
+  .progress .fill {
+    height: 100%;
+    width: 33%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    border-radius: 999px;
+    transition: width .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .progress .meta {
+    display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--ink-soft); font-weight: 600;
+  }
+
+  /* Section header */
+  .section {
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 10px 0 10px;
+  }
+  .section h3 { margin: 0; font-size: 14px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-soft); }
+  .section .count {
+    background: white; border-radius: 999px; padding: 4px 10px;
+    font-size: 12px; font-weight: 700; color: var(--ink); box-shadow: var(--shadow-sm);
+  }
+
+  /* Call list */
+  .list { padding: 0 8px; display: flex; flex-direction: column; gap: 12px; }
+
+  .call {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--card);
+    border-radius: var(--radius-md);
+    padding: 14px 14px 14px 14px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    transition: transform .15s ease, box-shadow .15s ease;
+    cursor: pointer;
+    border: none; text-align: left; width: 100%; font: inherit; color: inherit;
+  }
+  .call:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(70, 40, 110, .12); }
+  .call:active { transform: translateY(0); }
+
+  .call .avatar {
+    flex: 0 0 auto;
+    width: 48px; height: 48px; border-radius: 16px;
+    display: grid; place-items: center;
+    color: #fff; font-weight: 800; font-size: 17px;
+    letter-spacing: .02em;
+    box-shadow: inset 0 -8px 14px rgba(0,0,0,.08);
+  }
+  .a-mom { background: linear-gradient(135deg, var(--rose), var(--accent)); }
+  .a-doc { background: linear-gradient(135deg, var(--sky), var(--accent-2)); }
+  .a-pal { background: linear-gradient(135deg, var(--mint), #4cc89a); }
+  .a-biz { background: linear-gradient(135deg, var(--peach), #ff8a5c); }
+  .a-grp { background: linear-gradient(135deg, var(--lilac), var(--accent-2)); }
+  .a-pet { background: linear-gradient(135deg, var(--lemon), var(--peach)); color: #6a4b00; }
+
+  .call .info { flex: 1 1 auto; min-width: 0; }
+  .call .name { font-size: 15.5px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+  .call .pill {
+    font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 999px;
+  }
+  .pill-soon { background: #ffe4ec; color: #b53a6a; }
+  .pill-today { background: #fff1cf; color: #946100; }
+  .pill-quick { background: #def6e8; color: #218458; }
+  .pill-low   { background: #e6e0ff; color: #5e44b8; }
+
+  .call .note {
+    margin-top: 2px;
+    font-size: 13px; color: var(--ink-soft);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .call .meta-row {
+    margin-top: 6px;
+    display: flex; gap: 12px; font-size: 11.5px; color: var(--ink-soft); font-weight: 600;
+  }
+  .call .meta-row span { display: inline-flex; align-items: center; gap: 4px; }
+
+  .call .actions {
+    display: flex; gap: 8px; margin-left: 6px;
+  }
+  .icon-btn {
+    border: none; background: #f3eeff; color: var(--accent-2);
+    width: 38px; height: 38px; border-radius: 14px;
+    display: grid; place-items: center;
+    cursor: pointer;
+    transition: transform .12s ease, background .12s ease, color .12s ease;
+  }
+  .icon-btn:hover { transform: scale(1.06); }
+  .icon-btn.call-btn { background: linear-gradient(135deg, #ffd6e0, #ffb6c8); color: #b53a6a; }
+  .icon-btn.call-btn:hover { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white; }
+  .icon-btn svg { width: 18px; height: 18px; }
+
+  .call.done .name,
+  .call.done .note { color: #b6b0c8; }
+  .call.done .name::before {
+    content: ""; display: inline-block; width: 16px; height: 16px; margin-right: 6px;
+    border-radius: 50%;
+    background: var(--mint) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>") center/12px no-repeat;
+    vertical-align: -3px;
+  }
+  .call.done .avatar { filter: grayscale(.5) opacity(.85); }
+
+  /* FAB */
+  .fab {
+    position: absolute;
+    right: 22px; bottom: 96px;
+    width: 58px; height: 58px; border-radius: 22px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: white;
+    display: grid; place-items: center;
+    box-shadow: 0 14px 28px rgba(255, 122, 162, .45);
+    cursor: pointer;
+    transition: transform .15s ease;
+  }
+  .fab:hover { transform: translateY(-2px) rotate(8deg); }
+  .fab svg { width: 24px; height: 24px; }
+
+  /* Tab bar */
+  .tabbar {
+    position: absolute;
+    left: 18px; right: 18px; bottom: 18px;
+    background: rgba(255,255,255,.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: 22px;
+    padding: 10px 8px;
+    display: flex; justify-content: space-around; align-items: center;
+    box-shadow: var(--shadow);
+  }
+  @media (max-width: 440px) {
+    .tabbar { left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); }
+    .fab { bottom: calc(96px + env(safe-area-inset-bottom)); right: 18px; }
+  }
+  .tab {
+    border: none; background: transparent; cursor: pointer;
+    color: var(--ink-soft);
+    width: 56px; height: 44px; border-radius: 14px;
+    display: grid; place-items: center;
+    transition: color .15s ease, background .15s ease;
+  }
+  .tab svg { width: 22px; height: 22px; }
+  .tab.active {
+    color: var(--accent);
+    background: linear-gradient(135deg, #ffe4ec, #efe6ff);
+  }
+  .tab:hover { color: var(--accent-2); }
+
+  /* Empty hearts cluster decoration */
+  .sparkle {
+    position: absolute; pointer-events: none; opacity: .55;
+  }
+  .sparkle.s1 { top: 70px; right: 28px; animation: float 5s ease-in-out infinite; }
+  .sparkle.s2 { top: 220px; left: 8px; animation: float 6s ease-in-out -2s infinite; }
+  .sparkle.s3 { bottom: 130px; left: 22px; animation: float 7s ease-in-out -3s infinite; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    50% { transform: translateY(-8px) rotate(8deg); }
+  }
+
+  /* List bottom padding so FAB / tabbar don't overlap */
+  .list-pad { height: 120px; }
+
+  /* Tiny entrance animation */
+  .call { animation: pop .35s ease-out backwards; }
+  .call:nth-child(1) { animation-delay: .02s; }
+  .call:nth-child(2) { animation-delay: .07s; }
+  .call:nth-child(3) { animation-delay: .12s; }
+  .call:nth-child(4) { animation-delay: .17s; }
+  .call:nth-child(5) { animation-delay: .22s; }
+  .call:nth-child(6) { animation-delay: .27s; }
+  @keyframes pop {
+    from { opacity: 0; transform: translateY(8px) scale(.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="phone" role="application" aria-label="To-Call List app">
+    <div class="notch" aria-hidden="true"></div>
+
+    <!-- decorative sparkles -->
+    <svg class="sparkle s1" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 2l1.8 5.6L19.5 9l-5.7 1.4L12 16l-1.8-5.6L4.5 9l5.7-1.4L12 2z" fill="#ff7aa2"/>
+    </svg>
+    <svg class="sparkle s2" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 2l1.5 5L19 8.5 13.5 10 12 15l-1.5-5L5 8.5 10.5 7 12 2z" fill="#9a7bff"/>
+    </svg>
+    <svg class="sparkle s3" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 2l1.4 4.6L18 8l-4.6 1.4L12 14l-1.4-4.6L6 8l4.6-1.4L12 2z" fill="#79c8ff"/>
+    </svg>
+
+    <div class="status-bar" aria-hidden="true">
+      <span>9:41</span>
+      <span class="icons">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="battery"></span>
+      </span>
+    </div>
+
+    <header class="header">
+      <div class="hello">
+        <span class="day">Sunday · May 10</span>
+        <h1>Hi Bren <span class="wave" aria-hidden="true">👋</span></h1>
+      </div>
+      <div class="avatar-me" aria-label="Your profile">B</div>
+    </header>
+
+    <section class="progress" aria-label="Today's progress">
+      <h2>You've made 2 of 6 calls today</h2>
+      <p>Four more to go — you've got this 💪</p>
+      <div class="bar" aria-hidden="true"><div class="fill" id="progressFill"></div></div>
+      <div class="meta"><span id="progressPct">33% done</span><span>4 left</span></div>
+    </section>
+
+    <div class="section">
+      <h3>To call</h3>
+      <span class="count" id="todoCount">4</span>
+    </div>
+
+    <div class="list" id="list">
+
+      <button class="call" data-id="1">
+        <div class="avatar a-mom">M</div>
+        <div class="info">
+          <div class="name">Mom <span class="pill pill-today">Today</span></div>
+          <div class="note">Sunday catch-up — ask about her garden</div>
+          <div class="meta-row">
+            <span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+              5:00 PM
+            </span>
+            <span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9"/><path d="M21 3l-9 9"/></svg>
+              Last: 6 days ago
+            </span>
+          </div>
+        </div>
+        <div class="actions">
+          <span class="icon-btn call-btn" aria-label="Call">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </span>
+        </div>
+      </button>
+
+      <button class="call" data-id="2">
+        <div class="avatar a-doc">DR</div>
+        <div class="info">
+          <div class="name">Dr. Reyes' office <span class="pill pill-soon">Soon</span></div>
+          <div class="note">Reschedule the dentist appt for next week</div>
+          <div class="meta-row">
+            <span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+              Before noon
+            </span>
+            <span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h12"/></svg>
+              2 mins
+            </span>
+          </div>
+        </div>
+        <div class="actions">
+          <span class="icon-btn call-btn" aria-label="Call">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </span>
+        </div>
+      </button>
+
+      <button class="call" data-id="3">
+        <div class="avatar a-pal">JL</div>
+        <div class="info">
+          <div class="name">Jamie L. <span class="pill pill-quick">Quick</span></div>
+          <div class="note">Birthday call! Ask how the new job is going</div>
+          <div class="meta-row">
+            <span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78l1.06 1.06L12 21l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              Wishlist
+            </span>
+            <span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+              Anytime
+            </span>
+          </div>
+        </div>
+        <div class="actions">
+          <span class="icon-btn call-btn" aria-label="Call">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </span>
+        </div>
+      </button>
+
+      <button class="call" data-id="4">
+        <div class="avatar a-pet">VT</div>
+        <div class="info">
+          <div class="name">Vet — Mochi's checkup <span class="pill pill-low">Whenever</span></div>
+          <div class="note">Book the 6-month visit for the cat</div>
+          <div class="meta-row">
+            <span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+              This week
+            </span>
+          </div>
+        </div>
+        <div class="actions">
+          <span class="icon-btn call-btn" aria-label="Call">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </span>
+        </div>
+      </button>
+
+      <button class="call done" data-id="5">
+        <div class="avatar a-biz">AC</div>
+        <div class="info">
+          <div class="name">Accountant</div>
+          <div class="note">Confirmed Q1 numbers — all good</div>
+          <div class="meta-row"><span>Done at 10:14 AM</span></div>
+        </div>
+      </button>
+
+      <button class="call done" data-id="6">
+        <div class="avatar a-grp">GR</div>
+        <div class="info">
+          <div class="name">Grandma</div>
+          <div class="note">Caught up — she sends her love</div>
+          <div class="meta-row"><span>Done yesterday</span></div>
+        </div>
+      </button>
+
+      <div class="list-pad" aria-hidden="true"></div>
+    </div>
+
+    <button class="fab" aria-label="Add a new person to call" id="fab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+
+    <nav class="tabbar" aria-label="Tab bar">
+      <button class="tab active" aria-label="List" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1.4"/><circle cx="4" cy="12" r="1.4"/><circle cx="4" cy="18" r="1.4"/></svg>
+      </button>
+      <button class="tab" aria-label="History">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/><path d="M3 12a9 9 0 0 1 9-9"/></svg>
+      </button>
+      <button class="tab" aria-label="Contacts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
+      <button class="tab" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6h0a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87h0a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>
+      </button>
+    </nav>
+  </div>
+
+<script>
+  // Tap a call card to mark it done (or undo).
+  const list = document.getElementById('list');
+  const todoCountEl = document.getElementById('todoCount');
+  const fillEl = document.getElementById('progressFill');
+  const pctEl = document.getElementById('progressPct');
+
+  function refresh() {
+    const cards = list.querySelectorAll('.call');
+    const total = cards.length;
+    const done = list.querySelectorAll('.call.done').length;
+    const todo = total - done;
+    todoCountEl.textContent = todo;
+    const pct = Math.round((done / total) * 100);
+    fillEl.style.width = pct + '%';
+    pctEl.textContent = pct + '% done';
+    document.querySelector('.progress h2').textContent =
+      "You've made " + done + ' of ' + total + ' calls today';
+    const left = total - done;
+    document.querySelector('.progress p').textContent =
+      left === 0 ? "All caught up — go enjoy your day ✨" :
+      left === 1 ? "Just one more — almost there!" :
+      left + " more to go — you've got this 💪";
+    document.querySelector('.progress .meta span:last-child').textContent = left + ' left';
+  }
+
+  list.addEventListener('click', (e) => {
+    const card = e.target.closest('.call');
+    if (!card) return;
+    // Don't toggle when tapping the call button itself — pretend to "call".
+    if (e.target.closest('.icon-btn')) {
+      card.classList.add('done');
+      refresh();
+      return;
+    }
+    card.classList.toggle('done');
+    refresh();
+  });
+
+  document.getElementById('fab').addEventListener('click', () => {
+    const name = prompt("Who do you need to call?");
+    if (!name) return;
+    const note = prompt("Quick note (optional)") || "Give them a ring";
+    const initials = name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase() || '·';
+    const palettes = ['a-mom','a-doc','a-pal','a-biz','a-grp','a-pet'];
+    const palette = palettes[Math.floor(Math.random() * palettes.length)];
+    const card = document.createElement('button');
+    card.className = 'call';
+    card.innerHTML = `
+      <div class="avatar ${palette}">${initials}</div>
+      <div class="info">
+        <div class="name">${escapeHtml(name)} <span class="pill pill-quick">New</span></div>
+        <div class="note">${escapeHtml(note)}</div>
+        <div class="meta-row"><span>Just added</span></div>
+      </div>
+      <div class="actions">
+        <span class="icon-btn call-btn" aria-label="Call">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </span>
+      </div>`;
+    list.insertBefore(card, list.querySelector('.list-pad'));
+    refresh();
+  });
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  refresh();
+</script>
+</body>
+</html>
