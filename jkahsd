@@ -1,0 +1,52 @@
+Our design system repo is missing a
+  │ geometry system that was built in the
+  │ original kernel-ds repo. Bring it in.
+  │
+  │ 1. Get the source. Add the original
+  │    repo as a remote (git remote add
+  │    upstream <url>), fetch main, and
+  │    read these files from it without
+  │    merging:
+  │    docs/idea-export-geometry.md,
+  │    docs/decisions/0071–0075,
+  │    packages/ui/src/styles.css (the
+  │    radius role tokens and
+  │    control-height tokens),
+  │    kernel-portal/src/components/portal/
+  │    geometry-foundation.tsx, and
+  │    kernel-portal/scripts/check-geometry
+  │    -roles.mjs.
+  │ 2. The rule: 4px controls, 8px
+  │    surfaces/floating/modal, square
+  │    seams between connected regions, and
+  │    full radius only for pill-shaped
+  │    things (statuses, avatars).
+  │    Components pick a named role. They
+  │    never infer radius from size.
+  │ 3. Adopt it here in this order:
+  │     - Add the role tokens
+  │       (--radius-control,
+  │       --radius-surface,
+  │       --radius-floating,
+  │       --radius-modal) and the control
+  │       heights.
+  │     - Point the old radius steps at the
+  │       roles: sm/md → control, lg →
+  │       surface, xl → modal. Everything
+  │       then shifts at once without a
+  │       rewrite.
+  │     - Port the geometry check script as
+  │       a gate.
+  │     - Add a /geometry page to our
+  │       portal with live controls for
+  │       each role.
+  │     - Migrate components to the
+  │       explicit role classes, starting
+  │       with controls.
+  │ 4. Record it as a decision record in
+  │    our own docs, citing the original
+  │    decisions as prior art.
+  │
+  │ Before changing anything, show me a
+  │ plan: what already exists here, what
+  │ conflicts, and the order of changes.
