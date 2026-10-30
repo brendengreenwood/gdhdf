@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kernel · The case for Brenden Greenwood as an FTE</title>
+<style>
+:root {
+  /* Geometry roles (decision 0084): a component picks its corner by what it
+     is, not by its size. Surface, floating and modal share a value but stay
+     separate names so one family can change later without reclassifying
+     every consumer. Connected regions inside a shell use no radius (the
+     seam); rounded-full is only for things that are pill-shaped by meaning. */
+  --radius-control: 0.25rem;  /* 4px — buttons, inputs, triggers, toggles */
+  --radius-surface: 0.5rem;   /* 8px — exposed edge of panels, cards, tables, alerts */
+  --radius-floating: 0.5rem;  /* 8px — menus, popovers, tooltips, command */
+  --radius-modal: 0.5rem;     /* 8px — blocking dialogs */
+  /* Legacy base radius (decision 0065). Kept only as a fallback for code that
+     still reads --radius directly; new code names a role. */
+  --radius: 0.875rem;
+  /* A connected panel rounds its outer shell once; regions inside it stay
+     square and share seams. The inset is spacing only — it no longer derives
+     an inner corner. */
+  --panel-radius: var(--radius-surface);
+  --panel-inset: calc(var(--spacing) * 3);
+
+  /* control metrics (decision 0010): the density knob for interactive controls */
+  --control-h-sm: 2rem;      /* 32px — compact toolbars, dense rows */
+  --control-h: 2.375rem;     /* 38px — the resting default */
+  --control-h-lg: 2.75rem;   /* 44px — hero actions; the touch minimum */
+
+  /* motion system (decision 0018): one source for timing + easing so
+     polish stays consistent and tunable. Honor prefers-reduced-motion
+     (guard at the end of this file). */
+  --duration-fast: 120ms;    /* hovers, small state flips */
+  --duration-base: 200ms;    /* the resting default */
+  --duration-slow: 320ms;    /* enter/exit, layout shifts */
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);        /* decelerate — most UI */
+  --ease-in-out: cubic-bezier(0.5, 0, 0.2, 1);   /* symmetric moves */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* playful overshoot */
+
+  --background: oklch(1.0000 0 0);
+  --foreground: oklch(0.2128 0.0209 162.2254);
+  --card: oklch(1.0000 0 0);
+  --card-foreground: oklch(0.2128 0.0209 162.2254);
+  --popover: oklch(1.0000 0 0);
+  --popover-foreground: oklch(0.2128 0.0209 162.2254);
+  --primary: oklch(0.5364 0.1457 150.5842);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.9758 0.0163 121.7629);
+  --secondary-foreground: oklch(0.4373 0.1176 150.8612);
+  --muted: oklch(0.9612 0 0);
+  --muted-foreground: oklch(0.5350 0.0104 161.1304);
+  --accent: var(--lime-300);
+  --accent-foreground: oklch(0.2469 0.0618 153.3342);
+  --destructive: oklch(0.5227 0.2063 25.8499);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.8957 0.0025 165.0685);
+  --input: oklch(0.7140 0.0064 170.3662);
+  --ring: oklch(0.5364 0.1457 150.5842);
+
+  --chart-1: oklch(0.5364 0.1457 150.5842);
+  --chart-2: var(--lime-500);
+  --chart-3: var(--lime-300);
+  --chart-4: oklch(0.4373 0.1176 150.8612);
+  --chart-5: oklch(0.2469 0.0618 153.3342);
+
+  --sidebar: var(--neutral-100);
+  --sidebar-foreground: oklch(0.2128 0.0209 162.2254);
+  --sidebar-primary: oklch(0.5364 0.1457 150.5842);
+  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  /* Nav selection/hover is NEUTRAL, not green (see the .dark note). It also
+     has to be DARKER than the rail: a selected item lighter than a 0.967 rail
+     would read as a hole rather than a chip. One rung down. */
+  --sidebar-accent: var(--neutral-200);
+  --sidebar-accent-foreground: var(--neutral-900);
+  --sidebar-border: var(--neutral-200);
+  --sidebar-ring: oklch(0.5364 0.1457 150.5842);
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Shadows are green-tinted near-black, not neutral black. Every surface in
+     Kernel is a green-tinted neutral, and occlusion on a tinted surface stays
+     in that surface's hue family — a pure-black cast reads as a foreign grey
+     smudge laid over the page. `--shadow-color` was declared here from the
+     start but nothing referenced it; the ramp below now does. */
+  --shadow-color: oklch(0.16 0.022 165);
+  --shadow-opacity: 0.1;
+  --shadow-blur: 3px;
+  --shadow-spread: 0px;
+  --shadow-offset-x: 0;
+  --shadow-offset-y: 1px;
+  --letter-spacing: 0em;
+  --spacing: 0.24rem;
+  --tracking-normal: 0em;
+
+  /* Elevation ramp (register Part 2.8, decision 0081). The two smallest rungs
+     are transparent BY DESIGN — small surfaces are defined by their border, not
+     by lift. From `sm` up the ramp is ergonomic, not geometric: footprints climb
+     ~1.6x a rung (2 → 3 → 5 → 8 → 13px) so the whole ramp lands inside one
+     layout gutter rather than dictating minimum spacing. `shadow` is a twin of
+     `sm`, and `sm`→`md` shares its Y offset, so the rungs are not strictly larger
+     on every axis — what separates one rung from the next is depth of tone (the
+     per-theme alpha below), not distance travelled. Geometry is identical across
+     themes; only the alpha differs. */
+  --shadow-2xs: 0 0 0 0 transparent;
+  --shadow-xs: 0 0 0 0 transparent;
+  --shadow-sm: 0 1px 2px -1px color-mix(in oklch, var(--shadow-color) 4%, transparent);
+  --shadow: 0 1px 2px -1px color-mix(in oklch, var(--shadow-color) 4%, transparent);
+  --shadow-md: 0 1px 3px -1px color-mix(in oklch, var(--shadow-color) 6%, transparent);
+  --shadow-lg: 0 2px 5px -2px color-mix(in oklch, var(--shadow-color) 8%, transparent);
+  --shadow-xl: 0 3px 8px -3px color-mix(in oklch, var(--shadow-color) 10%, transparent);
+  --shadow-2xl: 0 5px 12px -4px color-mix(in oklch, var(--shadow-color) 14%, transparent);
+
+  /* ---- elevation recipe (register Part 2.4) ----
+     A white card on a white canvas measures 1.000:1 — it exists only by its
+     hairline. Here the CAST does the lifting, not the edge: light already
+     comes from above in a light UI, so a white lip has nothing to add and
+     stays transparent. The plate is a surface sitting ON a card — frames,
+     inner panels, tiles: ~1.06:1 off its parent, a step, not a slab. */
+  --elev-lip: transparent;
+  --elev-cast: var(--shadow-lg);
+  --elev-edge-page: var(--border);
+  --elev-plate: color-mix(in oklch, var(--card), var(--foreground) 2.5%);
+}
+:root {
+  --brand-50: oklch(0.975 0.012 150.5);
+  --brand-100: oklch(0.945 0.030 150.5);
+  --brand-200: oklch(0.895 0.055 150.5);
+  --brand-300: oklch(0.825 0.088 150.5);
+  --brand-400: oklch(0.730 0.125 150.5);
+  --brand-500: oklch(0.620 0.150 150.5);
+  --brand-600: oklch(0.536 0.146 150.6);
+  --brand-700: oklch(0.450 0.124 150.8);
+  --brand-800: oklch(0.375 0.100 151.5);
+  --brand-900: oklch(0.300 0.078 152.5);
+  --brand-950: oklch(0.225 0.055 153.5);
+
+  /* Lime — the accent green. Shipped for a long time as a bare literal in
+     the role layer (accent/primary/ring/chart); this is that hue given a
+     real family. 300 and 500 are pinned to the two values already in use,
+     so the roles below point at the scale with no visual change. */
+  --lime-50: oklch(0.985 0.022 126.8);
+  --lime-100: oklch(0.960 0.048 127.0);
+  --lime-200: oklch(0.925 0.085 127.4);
+  --lime-300: oklch(0.8722 0.1272 127.8039);
+  --lime-400: oklch(0.785 0.140 127.85);
+  --lime-500: oklch(0.6884 0.1436 127.9082);
+  --lime-600: oklch(0.600 0.132 128.4);
+  --lime-700: oklch(0.515 0.115 129.0);
+  --lime-800: oklch(0.430 0.096 129.6);
+  --lime-900: oklch(0.345 0.076 130.2);
+  --lime-950: oklch(0.260 0.056 130.8);
+  --lime-light: var(--lime-200);
+  --lime: var(--lime-500);
+  --lime-dark: var(--lime-700);
+
+  --neutral-50: oklch(0.985 0.002 165);
+  --neutral-100: oklch(0.967 0.003 165);
+  --neutral-200: oklch(0.922 0.004 165);
+  --neutral-300: oklch(0.860 0.005 165);
+  --neutral-400: oklch(0.708 0.007 168);
+  --neutral-500: oklch(0.562 0.010 161);
+  --neutral-600: oklch(0.460 0.012 163);
+  --neutral-700: oklch(0.370 0.014 164);
+  --neutral-800: oklch(0.270 0.017 165);
+  --neutral-900: oklch(0.213 0.021 162);
+  --neutral-950: oklch(0.165 0.020 163);
+
+  --success-50: oklch(0.962 0.030 168);
+  --success-100: oklch(0.922 0.058 168);
+  --success-200: oklch(0.872 0.090 168);
+  --success-300: oklch(0.808 0.118 168);
+  --success-400: oklch(0.712 0.140 168);
+  --success-500: oklch(0.600 0.142 168);
+  --success-600: oklch(0.520 0.130 168);
+  --success-700: oklch(0.448 0.112 168);
+  --success-800: oklch(0.378 0.092 169);
+  --success-900: oklch(0.308 0.072 169);
+
+  --warning-50: oklch(0.975 0.030 90);
+  --warning-100: oklch(0.945 0.070 88);
+  --warning-200: oklch(0.900 0.110 85);
+  --warning-300: oklch(0.860 0.140 82);
+  --warning-400: oklch(0.810 0.155 78);
+  --warning-500: oklch(0.760 0.150 75);
+  --warning-600: oklch(0.680 0.140 70);
+  --warning-700: oklch(0.580 0.120 66);
+  --warning-800: oklch(0.470 0.098 63);
+  --warning-900: oklch(0.380 0.078 61);
+
+  --error-50: oklch(0.962 0.018 25);
+  --error-100: oklch(0.922 0.045 25);
+  --error-200: oklch(0.875 0.080 25);
+  --error-300: oklch(0.808 0.120 26);
+  --error-400: oklch(0.700 0.180 27);
+  --error-500: oklch(0.580 0.206 27);
+  --error-600: oklch(0.523 0.206 26);
+  --error-700: oklch(0.470 0.190 26);
+  --error-800: oklch(0.400 0.158 25);
+  --error-900: oklch(0.330 0.120 24);
+
+  --info-50: oklch(0.962 0.018 245);
+  --info-100: oklch(0.922 0.040 245);
+  --info-200: oklch(0.872 0.070 246);
+  --info-300: oklch(0.800 0.100 247);
+  --info-400: oklch(0.690 0.140 250);
+  --info-500: oklch(0.585 0.165 252);
+  --info-600: oklch(0.515 0.165 254);
+  --info-700: oklch(0.450 0.150 256);
+  --info-800: oklch(0.380 0.120 258);
+  --info-900: oklch(0.310 0.092 260);
+
+  --viz-crop-50: oklch(0.975 0.012 132);
+  --viz-crop-100: oklch(0.945 0.030 132);
+  --viz-crop-200: oklch(0.895 0.055 132);
+  --viz-crop-300: oklch(0.825 0.088 132);
+  --viz-crop-400: oklch(0.730 0.125 132);
+  --viz-crop-500: oklch(0.620 0.150 132);
+  --viz-crop-600: oklch(0.536 0.146 132);
+  --viz-crop-700: oklch(0.450 0.124 133);
+  --viz-crop-800: oklch(0.375 0.100 133);
+  --viz-crop-900: oklch(0.300 0.078 134);
+  --viz-crop-950: oklch(0.225 0.055 134);
+  --viz-crop-light: var(--viz-crop-200);
+  --viz-crop: var(--viz-crop-500);
+  --viz-crop-dark: var(--viz-crop-700);
+  --viz-wheat-50: oklch(0.975 0.030 111);
+  --viz-wheat-100: oklch(0.945 0.060 108);
+  --viz-wheat-200: oklch(0.895 0.090 104);
+  --viz-wheat-300: oklch(0.825 0.120 101);
+  --viz-wheat-400: oklch(0.730 0.150 98);
+  --viz-wheat-500: oklch(0.620 0.150 94);
+  --viz-wheat-600: oklch(0.536 0.140 90);
+  --viz-wheat-700: oklch(0.450 0.120 86);
+  --viz-wheat-800: oklch(0.375 0.100 82);
+  --viz-wheat-900: oklch(0.300 0.080 79);
+  --viz-wheat-950: oklch(0.225 0.060 77);
+  --viz-wheat-light: var(--viz-wheat-200);
+  --viz-wheat: var(--viz-wheat-500);
+  --viz-wheat-dark: var(--viz-wheat-700);
+  --viz-clay-50: oklch(0.975 0.022 71);
+  --viz-clay-100: oklch(0.945 0.050 69);
+  --viz-clay-200: oklch(0.895 0.082 67);
+  --viz-clay-300: oklch(0.825 0.110 65);
+  --viz-clay-400: oklch(0.730 0.130 63);
+  --viz-clay-500: oklch(0.620 0.130 62);
+  --viz-clay-600: oklch(0.536 0.120 60);
+  --viz-clay-700: oklch(0.450 0.102 58);
+  --viz-clay-800: oklch(0.375 0.086 56);
+  --viz-clay-900: oklch(0.300 0.070 54);
+  --viz-clay-950: oklch(0.225 0.052 52);
+  --viz-clay-light: var(--viz-clay-200);
+  --viz-clay: var(--viz-clay-500);
+  --viz-clay-dark: var(--viz-clay-700);
+  --viz-sky-50: oklch(0.975 0.018 238);
+  --viz-sky-100: oklch(0.945 0.040 239);
+  --viz-sky-200: oklch(0.895 0.070 240);
+  --viz-sky-300: oklch(0.825 0.100 241);
+  --viz-sky-400: oklch(0.730 0.130 242);
+  --viz-sky-500: oklch(0.620 0.135 243);
+  --viz-sky-600: oklch(0.536 0.128 245);
+  --viz-sky-700: oklch(0.450 0.115 247);
+  --viz-sky-800: oklch(0.375 0.098 249);
+  --viz-sky-900: oklch(0.300 0.080 251);
+  --viz-sky-950: oklch(0.225 0.060 253);
+  --viz-sky-light: var(--viz-sky-200);
+  --viz-sky: var(--viz-sky-500);
+  --viz-sky-dark: var(--viz-sky-700);
+  --viz-plum-50: oklch(0.975 0.022 328);
+  --viz-plum-100: oklch(0.945 0.050 329);
+  --viz-plum-200: oklch(0.895 0.085 329);
+  --viz-plum-300: oklch(0.825 0.115 330);
+  --viz-plum-400: oklch(0.730 0.145 330);
+  --viz-plum-500: oklch(0.620 0.150 331);
+  --viz-plum-600: oklch(0.536 0.140 332);
+  --viz-plum-700: oklch(0.450 0.120 333);
+  --viz-plum-800: oklch(0.375 0.100 334);
+  --viz-plum-900: oklch(0.300 0.082 335);
+  --viz-plum-950: oklch(0.225 0.062 336);
+  --viz-plum-light: var(--viz-plum-200);
+  --viz-plum: var(--viz-plum-500);
+  --viz-plum-dark: var(--viz-plum-700);
+  --viz-teal-50: oklch(0.975 0.018 192);
+  --viz-teal-100: oklch(0.945 0.038 193);
+  --viz-teal-200: oklch(0.895 0.060 194);
+  --viz-teal-300: oklch(0.825 0.082 195);
+  --viz-teal-400: oklch(0.730 0.100 196);
+  --viz-teal-500: oklch(0.620 0.100 196);
+  --viz-teal-600: oklch(0.536 0.092 197);
+  --viz-teal-700: oklch(0.450 0.080 198);
+  --viz-teal-800: oklch(0.375 0.068 199);
+  --viz-teal-900: oklch(0.300 0.055 200);
+  --viz-teal-950: oklch(0.225 0.042 201);
+  --viz-teal-light: var(--viz-teal-200);
+  --viz-teal: var(--viz-teal-500);
+  --viz-teal-dark: var(--viz-teal-700);
+  --viz-rust-50: oklch(0.975 0.018 44);
+  --viz-rust-100: oklch(0.945 0.045 43);
+  --viz-rust-200: oklch(0.895 0.075 42);
+  --viz-rust-300: oklch(0.825 0.100 41);
+  --viz-rust-400: oklch(0.730 0.118 40);
+  --viz-rust-500: oklch(0.620 0.110 38);
+  --viz-rust-600: oklch(0.536 0.100 37);
+  --viz-rust-700: oklch(0.450 0.088 36);
+  --viz-rust-800: oklch(0.375 0.075 35);
+  --viz-rust-900: oklch(0.300 0.062 34);
+  --viz-rust-950: oklch(0.225 0.048 33);
+  --viz-rust-light: var(--viz-rust-200);
+  --viz-rust: var(--viz-rust-500);
+  --viz-rust-dark: var(--viz-rust-700);
+  --viz-slate-50: oklch(0.975 0.006 248);
+  --viz-slate-100: oklch(0.945 0.010 248);
+  --viz-slate-200: oklch(0.895 0.016 249);
+  --viz-slate-300: oklch(0.825 0.022 250);
+  --viz-slate-400: oklch(0.730 0.028 250);
+  --viz-slate-500: oklch(0.620 0.030 250);
+  --viz-slate-600: oklch(0.536 0.030 251);
+  --viz-slate-700: oklch(0.450 0.028 252);
+  --viz-slate-800: oklch(0.375 0.024 253);
+  --viz-slate-900: oklch(0.300 0.020 254);
+  --viz-slate-950: oklch(0.225 0.016 255);
+  --viz-slate-light: var(--viz-slate-200);
+  --viz-slate: var(--viz-slate-500);
+  --viz-slate-dark: var(--viz-slate-700);
+
+  /* ===== COMMODITY coding — categorical crop hues (decision 0013) ===== */
+  --commodity-corn-50: oklch(0.975 0.028 84);
+  --commodity-corn-100: oklch(0.945 0.058 83);
+  --commodity-corn-200: oklch(0.898 0.095 82);
+  --commodity-corn-300: oklch(0.828 0.128 81);
+  --commodity-corn-400: oklch(0.742 0.150 80);
+  --commodity-corn-500: oklch(0.660 0.150 80);
+  --commodity-corn-600: oklch(0.566 0.140 79);
+  --commodity-corn-700: oklch(0.474 0.120 78);
+  --commodity-corn-800: oklch(0.396 0.098 77);
+  --commodity-corn-900: oklch(0.316 0.076 76);
+  --commodity-corn-950: oklch(0.236 0.054 75);
+  --commodity-corn-light: var(--commodity-corn-200);
+  --commodity-corn: var(--commodity-corn-500);
+  --commodity-corn-dark: var(--commodity-corn-700);
+  --commodity-canola-50: oklch(0.980 0.030 105);
+  --commodity-canola-100: oklch(0.955 0.062 104);
+  --commodity-canola-200: oklch(0.912 0.100 103);
+  --commodity-canola-300: oklch(0.852 0.135 102);
+  --commodity-canola-400: oklch(0.782 0.160 101);
+  --commodity-canola-500: oklch(0.720 0.162 100);
+  --commodity-canola-600: oklch(0.628 0.150 99);
+  --commodity-canola-700: oklch(0.524 0.126 98);
+  --commodity-canola-800: oklch(0.432 0.102 96);
+  --commodity-canola-900: oklch(0.342 0.080 94);
+  --commodity-canola-950: oklch(0.256 0.056 92);
+  --commodity-canola-light: var(--commodity-canola-200);
+  --commodity-canola: var(--commodity-canola-500);
+  --commodity-canola-dark: var(--commodity-canola-700);
+  --commodity-soy-50: oklch(0.975 0.016 197);
+  --commodity-soy-100: oklch(0.945 0.035 197);
+  --commodity-soy-200: oklch(0.895 0.059 197);
+  --commodity-soy-300: oklch(0.820 0.082 197);
+  --commodity-soy-400: oklch(0.722 0.102 197);
+  --commodity-soy-500: oklch(0.6189 0.0996 196.63);
+  --commodity-soy-600: oklch(0.528 0.089 197);
+  --commodity-soy-700: oklch(0.442 0.075 197);
+  --commodity-soy-800: oklch(0.368 0.062 197);
+  --commodity-soy-900: oklch(0.298 0.050 197);
+  --commodity-soy-950: oklch(0.224 0.035 197);
+  --commodity-soy-light: var(--commodity-soy-200);
+  --commodity-soy: var(--commodity-soy-500);
+  --commodity-soy-dark: var(--commodity-soy-700);
+  --commodity-wheat-50: oklch(0.976 0.018 72);
+  --commodity-wheat-100: oklch(0.946 0.034 70);
+  --commodity-wheat-200: oklch(0.900 0.052 69);
+  --commodity-wheat-300: oklch(0.830 0.070 68);
+  --commodity-wheat-400: oklch(0.744 0.086 67);
+  --commodity-wheat-500: oklch(0.662 0.092 66);
+  --commodity-wheat-600: oklch(0.570 0.086 65);
+  --commodity-wheat-700: oklch(0.478 0.074 64);
+  --commodity-wheat-800: oklch(0.400 0.060 63);
+  --commodity-wheat-900: oklch(0.320 0.048 62);
+  --commodity-wheat-950: oklch(0.240 0.036 61);
+  --commodity-wheat-light: var(--commodity-wheat-200);
+  --commodity-wheat: var(--commodity-wheat-500);
+  --commodity-wheat-dark: var(--commodity-wheat-700);
+}
+:root {
+  --status-draft: var(--neutral-500);
+  --status-pending: var(--info-500);
+  --status-booked: var(--viz-plum-500);
+  --status-intransit: var(--warning-500);
+  --status-delivered: var(--viz-teal-500);
+  --status-settled: var(--success-500);
+  --status-onhold: var(--viz-clay-500);
+  --status-rejected: var(--error-500);
+  --status-cancelled: var(--viz-slate-500);
+  --status-expired: var(--viz-rust-500);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--neutral-900); font-family: var(--font-sans); color: var(--foreground); -webkit-font-smoothing: antialiased; }
+html, body { background: radial-gradient(ellipse at 50% 40%, var(--brand-950), #020a06 75%); overflow: hidden; }
+.slide { position: fixed; inset: 0; display: grid; place-items: center;
+  opacity: 0; visibility: hidden; transition: opacity 500ms ease, visibility 0s linear 500ms; }
+.slide.on { opacity: 1; visibility: visible; transition: opacity 500ms ease; }
+.canvas {
+  width: 1280px; height: 720px; flex: none; position: relative; overflow: hidden;
+  background: var(--background); border-radius: 14px;
+  box-shadow: 0 40px 120px -30px rgb(0 0 0 / .7), 0 0 0 1px rgb(255 255 255 / .04);
+  padding: 64px 80px 72px; transform-origin: center;
+  transform: scale(var(--s, 1)) translateX(var(--x, 0px));
+  transition: transform 700ms cubic-bezier(.16, 1, .3, 1);
+  display: flex; flex-direction: column;
+}
+.slide:not(.on) .canvas { --x: calc(var(--dir, 1) * 60px); }
+.slide.leaving .canvas { --x: calc(var(--dir, 1) * -60px); }
+
+/* staggered reveal */
+.rv { opacity: 0; transform: translateY(18px); }
+.slide.on .rv { opacity: 1; transform: none;
+  transition: opacity 600ms ease, transform 800ms cubic-bezier(.16, 1, .3, 1);
+  transition-delay: calc(180ms + var(--i, 0) * var(--st, 80ms)); }
+.chain-slide { --st: 340ms; }
+
+/* dark "hero" slides */
+.dark .canvas { background: radial-gradient(ellipse at 85% 10%, color-mix(in oklch, var(--brand-700) 45%, transparent), transparent 55%), var(--brand-950); color: var(--neutral-50); }
+.dark h1, .dark h2 { color: #fff; }
+.dark .kicker { color: var(--lime-400); }
+.dark .lede { color: var(--lime-200); }
+.dark .meta, .dark .note, .dark footer, .dark .big em, .dark .bar-labels { color: color-mix(in oklch, var(--brand-100) 60%, transparent); }
+.dark footer .brand, .dark .bar-labels strong { color: #fff; }
+.dark .big b { color: var(--lime-400); text-shadow: 0 0 40px color-mix(in oklch, var(--lime-400) 45%, transparent); }
+.dark .bar { background: color-mix(in oklch, var(--brand-100) 12%, transparent); }
+.dark .bar i { background: linear-gradient(90deg, var(--lime-600), var(--lime-400)); box-shadow: 0 0 24px color-mix(in oklch, var(--lime-400) 60%, transparent); }
+
+
+.chain-slide .body { gap: 18px; }
+.tail { display: grid; grid-template-columns: 1.6fr 1fr; gap: 40px; align-items: center; }
+.tail blockquote { font-size: 21px; }
+.tail .fit { font-size: 18px; }
+.credit { font-size: 15px; color: var(--muted-foreground); }
+.kicker { margin: 0 0 8px; font-size: 15px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--brand-600); }
+h1 { font-size: 84px; line-height: 1; margin: 24px 0 0; font-weight: 700; letter-spacing: -.02em; color: var(--brand-900); }
+h2 { font-size: 48px; line-height: 1.1; margin: 0; font-weight: 700; letter-spacing: -.015em; }
+h3 { margin: 0; font-size: 22px; font-weight: 600; }
+.body { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 28px; }
+.note { margin: 0; color: var(--muted-foreground); font-size: 20px; }
+footer { position: absolute; left: 80px; right: 80px; bottom: 28px; display: flex; justify-content: space-between; font-size: 14px; color: var(--muted-foreground); }
+footer .brand { display: inline-flex; gap: 8px; align-items: center; font-weight: 600; color: var(--foreground); }
+
+.title h1 { max-width: 640px; font-size: 96px; }
+.meta .by { color: #fff; font-weight: 600; }
+.title .lede { max-width: 600px; line-height: 1.25; text-wrap: balance; }
+.title .body { justify-content: flex-start; padding-top: 24px; max-width: 660px; }
+.lede { margin: 0; font-size: 34px; color: var(--brand-700); max-width: 900px; }
+.meta { margin: 72px 0 0; font-size: 18px; color: var(--muted-foreground); line-height: 1.6; }
+
+.big b { display: block; font-size: 112px; line-height: 1; font-weight: 700; color: var(--brand-700); font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
+.big b small { font-size: 40px; color: var(--muted-foreground); font-weight: 600; letter-spacing: 0; }
+.big span { display: block; margin-top: 16px; font-size: 24px; line-height: 1.3; }
+.big em { display: block; margin-top: 10px; font-style: normal; font-size: 18px; color: var(--muted-foreground); }
+.body:has(> .stats3) { justify-content: flex-start; padding-top: 96px; }
+.stats3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; }
+.stats3 .big { border-top: 4px solid var(--lime-400); padding-top: 24px; }
+
+.grp { display: inline-grid; place-items: center; min-width: 30px; height: 30px; padding: 0 8px; margin-right: 6px; border-radius: 999px;
+  font-size: 15px; font-weight: 700; font-style: normal; letter-spacing: 0; vertical-align: middle; line-height: 1; }
+.grp.a { background: var(--neutral-200); color: var(--neutral-800); }
+.grp.b { background: var(--lime-200); color: var(--lime-900); }
+.grp.c { background: var(--brand-700); color: var(--primary-foreground); }
+.grp.all { background: transparent; color: var(--muted-foreground); box-shadow: inset 0 0 0 1px var(--border); }
+.big .grp { display: inline-grid; margin: 0 6px 14px 0; font-size: 15px; }
+.hits { margin: 18px 0 0 !important; font-size: 14px !important; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted-foreground); }
+.hits .grp { margin: 0 0 0 6px; }
+.funnel { display: grid; gap: 18px; }
+.frow { display: grid; grid-template-columns: 360px 1fr 300px; gap: 28px; align-items: center; }
+.frow .lab, .frow .drop { margin: 0; font-size: 22px; }
+.frow .lab b { display: inline-block; min-width: 72px; font-size: 48px; line-height: 1; color: var(--brand-700); font-variant-numeric: tabular-nums; vertical-align: -6px; }
+.frow .bar { height: 48px; }
+.frow .bar i { transition-delay: calc(500ms + var(--k) * 350ms); }
+.frow .drop { color: var(--muted-foreground); }
+.also { margin: 8px 0 0; font-size: 24px; }
+.hero { display: grid; grid-template-columns: 1fr 1.2fr; gap: 64px; align-items: center; }
+.hero .big b { font-size: 160px; }
+.bar { height: 40px; border-radius: var(--radius-control); background: var(--neutral-200); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--primary); transition: width 1400ms cubic-bezier(.16, 1, .3, 1) 600ms; }
+.slide.on .bar i { width: var(--w); }
+.bar-labels { display: flex; justify-content: space-between; margin: 12px 0 28px; font-size: 18px; color: var(--muted-foreground); }
+.bar-labels strong { color: var(--foreground); font-variant-numeric: tabular-nums; }
+
+.gaps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.gap { background: var(--neutral-50); border-radius: var(--radius-surface); padding: 28px 24px; box-shadow: 0 0 0 1px var(--border); }
+.gap i { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 999px; background: var(--brand-700); color: var(--primary-foreground); font-style: normal; font-weight: 700; font-size: 18px; margin-bottom: 20px; }
+.gap p { margin: 12px 0 0; font-size: 19px; line-height: 1.4; }
+.gap em { display: block; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); font-style: normal; font-size: 16px; color: var(--muted-foreground); }
+
+.chain { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; counter-reset: c; }
+.chain li { position: relative; border-top: 6px solid var(--primary); padding-top: 20px; counter-increment: c; }
+.chain li:nth-child(4) { border-color: var(--lime-500); }
+.chain li::before { content: counter(c); font-size: 15px; font-weight: 700; color: var(--brand-600); }
+.chain li:not(:last-child)::after { content: "→"; position: absolute; right: -32px; top: 22px; font-size: 26px; color: var(--neutral-400); }
+.chain h3 { font-size: 30px; margin-top: 4px; }
+.chain p { margin: 10px 0 0; font-size: 19px; line-height: 1.4; color: var(--muted-foreground); }
+blockquote { margin: 0; padding-left: 20px; border-left: 4px solid var(--lime-400); font-size: 24px; color: var(--brand-800); }
+blockquote cite { display: block; margin-top: 6px; font-size: 15px; font-style: normal; color: var(--muted-foreground); }
+.fit { margin: 0; font-size: 20px; }
+.lede.sm { font-size: 28px; }
+.dark .note .lit { color: var(--lime-300); }
+.learn .gap em { color: var(--brand-700); font-weight: 600; }
+
+.order { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.order li { background: var(--neutral-50); box-shadow: 0 0 0 1px var(--border); border-radius: var(--radius-surface); padding: 28px 24px; }
+.order b { display: block; font-size: 56px; line-height: 1; color: var(--brand-700); }
+.order h3 { font-size: 28px; margin: 16px 0 18px; }
+.tag { display: inline-block; padding: 4px 10px; border-radius: var(--radius-control); font-size: 15px; font-weight: 500; }
+.tag.ok { background: var(--success-100); color: var(--success-800); }
+.tag.new { background: var(--lime-100); color: var(--lime-900); }
+
+table { width: 100%; border-collapse: collapse; font-size: 22px; }
+th { text-align: left; font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted-foreground); padding: 0 16px 12px; border-bottom: 2px solid var(--border); }
+td { padding: 10px 16px; border-bottom: 1px solid var(--border); }
+.n { text-align: right; font-variant-numeric: tabular-nums; }
+td.up, td.down { font-weight: 700; font-size: 26px; color: var(--brand-600); }
+
+.asks { display: grid; grid-template-columns: .7fr 1.3fr 1.1fr; gap: 24px; }
+.ask { border-top: 4px solid var(--primary); padding-top: 20px; }
+.ask ul, .two ul { margin: 14px 0 0; padding-left: 22px; font-size: 20px; line-height: 1.5; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }
+
+nav { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 6px; z-index: 2; }
+nav button { font: inherit; height: var(--control-h-sm); min-width: 36px; border: 0; border-radius: var(--radius-control); background: color-mix(in oklch, var(--background) 15%, transparent); color: var(--neutral-50); cursor: pointer; }
+nav button:hover { background: color-mix(in oklch, var(--background) 25%, transparent); }
+nav button:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.progress { position: fixed; left: 0; top: 0; height: 3px; background: var(--lime-400); transition: width var(--duration-fast) var(--ease-out); z-index: 2; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+  .rv { opacity: 1; transform: none; }
+  .slide .bar i { width: var(--w); }
+}
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  html, body { background: none; height: auto; overflow: visible; }
+  nav, .progress { display: none; }
+  .slide { position: static; display: block; opacity: 1; visibility: visible; break-after: page; }
+  .canvas { transform: none; border-radius: 0; box-shadow: none; }
+  .rv { opacity: 1; transform: none; }
+  .slide .bar i { width: var(--w); }
+}
+
+/* FTE case additions */
+.title h1 { font-size: 64px; max-width: none; white-space: nowrap; }
+.s1 .mark { display: none; }
+.title .body { max-width: 1120px; gap: 12px; padding-top: 8px; }
+.title .lede { font-size: 24px; max-width: 1100px; }
+.bg-callout { display: flex; align-items: baseline; gap: 16px; margin: 2px 0 0; padding: 10px 18px; max-width: 980px; border-left: 3px solid var(--lime-400); border-radius: 0 var(--radius-surface) var(--radius-surface) 0; background: color-mix(in oklch, var(--brand-100) 7%, transparent); }
+.bg-callout small { flex: none; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--lime-300); }
+.bg-callout p { margin: 0; font-size: 16px; line-height: 1.45; color: color-mix(in oklch, var(--brand-100) 85%, transparent); }
+.qa { display: grid; grid-template-columns: 1fr 28px 1.2fr; gap: 14px; align-items: stretch; }
+.qa .q { padding: 10px 18px; border-radius: var(--radius-surface); }
+.qa .before { background: color-mix(in oklch, var(--brand-100) 7%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--brand-100) 18%, transparent); }
+.qa .after { background: color-mix(in oklch, var(--lime-400) 13%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--lime-400) 50%, transparent); }
+.qa small { display: block; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: color-mix(in oklch, var(--brand-100) 60%, transparent); }
+.qa .after small { color: var(--lime-300); }
+.qa p { margin: 4px 0 0; font-size: 23px; font-weight: 700; line-height: 1.15; color: #fff; }
+.qa .arrow { display: grid; place-items: center; color: var(--lime-400); font-size: 26px; }
+.qcite { margin: -6px 0 0; font-size: 15px; color: color-mix(in oklch, var(--brand-100) 60%, transparent); }
+.mini3 { display: grid; grid-template-columns: .8fr 1.6fr; gap: 24px; }
+.mini3 .big { border-top: 3px solid var(--lime-400); padding-top: 8px; }
+.mini3 .big b { font-size: 32px; }
+.mini3 .big span { margin-top: 4px; font-size: 17px; line-height: 1.35; }
+.src { position: absolute; left: 80px; right: 80px; bottom: 54px; margin: 0; font-size: 13px; color: var(--muted-foreground); }
+.dark .src { color: color-mix(in oklch, var(--brand-100) 50%, transparent); }
+
+.how4 { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: 18px; }
+.how4 > div { display: flex; flex-direction: column; background: var(--neutral-50); box-shadow: 0 0 0 1px var(--border); border-radius: var(--radius-surface); padding: 20px 24px; }
+.how4 h3 { font-size: 24px; display: flex; align-items: center; gap: 12px; }
+.how4 h3 i { display: grid; place-items: center; flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--brand-700); color: var(--primary-foreground); font-style: normal; font-size: 15px; }
+.how4 p { margin: 10px 0 0; font-size: 18px; line-height: 1.4; }
+.how4 .ev { margin-top: auto; padding-top: 10px; padding-bottom: 0; border-top: 1px solid var(--border); font-size: 14px; line-height: 1.4; color: var(--muted-foreground); }
+.how4 p.ev { margin-top: auto; font-size: 14px; }
+.how4 .seg { margin-top: auto; }
+.how4 .ev b { color: var(--brand-700); font-weight: 600; }
+.seg { display: flex; height: 28px; margin-top: 12px; border-radius: var(--radius-control); overflow: hidden; font-size: 13px; font-weight: 600; }
+.seg span { display: grid; place-items: center; white-space: nowrap; }
+.seg .a { background: var(--neutral-300); color: var(--neutral-900); }
+.seg .b { background: var(--lime-300); color: var(--lime-950, var(--lime-900)); }
+.seg .c { background: var(--brand-700); color: var(--primary-foreground); }
+.s2 .body { gap: 0; }
+
+.chain-slide .chain p { font-size: 19px; }
+.chain-slide .chain h3 { font-size: 26px; white-space: nowrap; }
+.chain-slide .tail { grid-template-columns: 1.2fr 1fr; gap: 36px; align-items: start; }
+.chain-slide .tail blockquote { font-size: 26px; }
+.chain-slide .fit { font-size: 20px; line-height: 1.45; }
+.chain-slide .body { gap: 40px; justify-content: center; }
+.chain-slide .fit + .fit { margin-top: 14px; }
+
+.canada { display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: center; padding: 22px 28px; border-radius: var(--radius-surface);
+  background: radial-gradient(ellipse at 90% 0%, color-mix(in oklch, var(--brand-600) 55%, transparent), transparent 60%), var(--brand-900); color: #fff; }
+.canada h3 { font-size: 30px; }
+.canada h3 em { display: block; font-style: normal; font-size: 14px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--lime-300); margin-top: 4px; }
+.canada p { margin: 0; font-size: 19px; line-height: 1.4; color: color-mix(in oklch, var(--brand-50) 85%, transparent); }
+.next6 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.next6 > div { background: var(--neutral-50); box-shadow: 0 0 0 1px var(--border); border-radius: var(--radius-surface); padding: 18px 22px; }
+.next6 h3 { font-size: 20px; color: var(--brand-700); }
+.next6 p { margin: 6px 0 0; font-size: 16px; line-height: 1.4; }
+.next6 .why { background: var(--brand-950); box-shadow: none; color: var(--neutral-50); }
+.next6 .why h3 { color: var(--lime-300); }
+.s4 .body { justify-content: flex-start; padding-top: 22px; gap: 16px; }
+</style></head>
+<body>
+<div class="progress" aria-hidden="true"></div>
+<section class="slide title dark s1" id="s1" aria-label="Slide 1 of 4: Make Brenden an FTE">
+  <div class="canvas">
+    <div class="mark"><svg width="56" height="56" overflow="visible" style="display: block;" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Logo">
+<circle id="Circle" cx="16" cy="16" r="16" fill="#00843D"/>
+<g id="Icon">
+<path id="Rectangle 1" d="M8.01719 14.3877C7.56418 9.63113 11.3046 5.51752 16.0828 5.51752C20.8609 5.51752 24.6013 9.63113 24.1483 14.3877L23.7842 18.2113C23.406 22.1818 20.0713 25.2141 16.0828 25.2141C12.0943 25.2141 8.75948 22.1818 8.38134 18.2113L8.01719 14.3877Z" fill="white"/>
+<path id="Rectangle 2" d="M11.4258 14.164C12.1214 20.0694 13.5839 28.966 16.0827 28.966C18.5814 28.966 20.0439 20.0694 20.7395 14.164C21.0656 11.3953 18.8705 9.03498 16.0827 9.03498C13.2949 9.03498 11.0997 11.3953 11.4258 14.164Z" fill="#00843D"/>
+<path id="Rectangle 2 (Stroke)" d="M16.0827 9.03498C18.8705 9.03501 21.0656 11.3954 20.7395 14.164C20.044 20.0694 18.5814 28.9659 16.0827 28.966C13.584 28.966 12.1212 20.0692 11.4257 14.1638C11.0997 11.3952 13.295 9.03498 16.0827 9.03498ZM16.0827 10.6902C14.8804 10.6745 13.7336 11.4201 13.2829 12.4859C13.0821 12.9488 13.0086 13.4552 13.0695 13.9703C13.1614 14.7501 13.2607 15.5295 13.368 16.3063C13.6768 18.5247 14.043 20.7393 14.5547 22.8628C14.8134 23.9236 15.1091 24.9658 15.4841 25.8954C15.6669 26.3471 15.878 26.7772 16.0827 27.0746C16.2507 26.8298 16.4281 26.4881 16.5838 26.1277C16.9376 25.308 17.2247 24.3642 17.4744 23.4051C17.9695 21.4842 18.3285 19.4672 18.6334 17.4461C18.8063 16.2921 18.9591 15.1294 19.0957 13.9703C19.3498 12.2851 17.835 10.6427 16.0827 10.6902Z" fill="white"/>
+</g>
+</g>
+</svg>
+</div>
+    <h1>Make Brenden an FTE</h1>
+    <div class="body">
+  <p class="lede">A designer who thinks like a product owner: he shapes what Kernel builds and why, then designs and ships it.</p>
+  <div class="qa">
+    <div class="q before"><small>Before · POC</small><p>“A calculator from 2005.”</p></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="q after"><small>After · UAT, after the redesign</small><p>“Feels more like a professional platform.”</p></div>
+  </div>
+  <p class="qcite">Ben Schulenberg, Merchant, Savage</p>
+  <div class="qa">
+    <div class="q before"><small>Before · his first ask</small><p>Export it to Excel.</p></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="q after"><small>After · today</small><p>“…the capabilities in the tool now defeated that request.”</p></div>
+  </div>
+  <p class="qcite">Alexander Broderius, Originator, Savage</p>
+  <div class="mini3">
+    <div class="big"><b>~30 sec</b><span>for a Merchant to build a scenario at UAT</span></div>
+    <div class="big"><b>Shipped</b><span>Research flagged the Originator experience as weakest. He redesigned and shipped it.</span></div>
+  </div>
+  <aside class="bg-callout" aria-label="What he brings"><small>What he brings</small><p>About 10 years of enterprise product design and a proven record building from zero. At Target/Roundel he helped build Cerebro Campaigns from scratch: 10,000 campaigns and 400% growth in its first year.</p></aside>
+</div>
+    <footer><span class="brand"><svg width="18" height="18" overflow="visible" style="display: block;" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Logo">
+<circle id="Circle" cx="16" cy="16" r="16" fill="#00843D"/>
+<g id="Icon">
+<path id="Rectangle 1" d="M8.01719 14.3877C7.56418 9.63113 11.3046 5.51752 16.0828 5.51752C20.8609 5.51752 24.6013 9.63113 24.1483 14.3877L23.7842 18.2113C23.406 22.1818 20.0713 25.2141 16.0828 25.2141C12.0943 25.2141 8.75948 22.1818 8.38134 18.2113L8.01719 14.3877Z" fill="white"/>
+<path id="Rectangle 2" d="M11.4258 14.164C12.1214 20.0694 13.5839 28.966 16.0827 28.966C18.5814 28.966 20.0439 20.0694 20.7395 14.164C21.0656 11.3953 18.8705 9.03498 16.0827 9.03498C13.2949 9.03498 11.0997 11.3953 11.4258 14.164Z" fill="#00843D"/>
+<path id="Rectangle 2 (Stroke)" d="M16.0827 9.03498C18.8705 9.03501 21.0656 11.3954 20.7395 14.164C20.044 20.0694 18.5814 28.9659 16.0827 28.966C13.584 28.966 12.1212 20.0692 11.4257 14.1638C11.0997 11.3952 13.295 9.03498 16.0827 9.03498ZM16.0827 10.6902C14.8804 10.6745 13.7336 11.4201 13.2829 12.4859C13.0821 12.9488 13.0086 13.4552 13.0695 13.9703C13.1614 14.7501 13.2607 15.5295 13.368 16.3063C13.6768 18.5247 14.043 20.7393 14.5547 22.8628C14.8134 23.9236 15.1091 24.9658 15.4841 25.8954C15.6669 26.3471 15.878 26.7772 16.0827 27.0746C16.2507 26.8298 16.4281 26.4881 16.5838 26.1277C16.9376 25.308 17.2247 24.3642 17.4744 23.4051C17.9695 21.4842 18.3285 19.4672 18.6334 17.4461C18.8063 16.2921 18.9591 15.1294 19.0957 13.9703C19.3498 12.2851 17.835 10.6427 16.0827 10.6902Z" fill="white"/>
+</g>
+</g>
+</svg>
+ Kernel</span><span>The case for an FTE · Brenden Greenwood</span><span>1 / 4</span></footer>
+  </div>
+</section>
+<section class="slide s2" id="s2" aria-label="Slide 2 of 4: Thinks in product, not just workflows">
+  <div class="canvas">
+    <p class="kicker">How he works</p>
+    <h2>Thinks in product, not just workflows</h2>
+    <div class="body">
+  <div class="how4">
+    <div><h3><i>1</i>Defines the product, not just screens</h3><p>He defined what a scenario is, how it changes over time and what publishing commits. He spotted that Merchants can’t see Originator outcomes, so Cargill can’t tell if guidance works.</p><p class="ev"><b>Scenario domain model</b> · <b>Merchant feedback dashboard:</b> his next build</p></div>
+    <div><h3><i>2</i>Validates with users, fast</h3><p>He designs and builds in the real code with real data, so users react to their own work, not an abstract concept.</p><p class="ev"><b>Originators’ biggest UAT ask:</b> working prototype in a day<br><b>Edit flow:</b> became the #1 priority and shipped</p></div>
+    <div><h3><i>3</i>Reads the data, shapes the strategy</h3><p>He finds why people do or don’t use Kernel, then works with Nate on features that drive adoption, like drafts where senior Merchants teach junior ones.</p>
+      <div class="seg" role="img" aria-label="31 Merchants: 7 never came in, 10 came in but never saved, 14 active"><span class="a" style="flex:7">7 never came in</span><span class="b" style="flex:10">10 never saved</span><span class="c" style="flex:14">14 active</span></div></div>
+    <div><h3><i>4</i>Sees over the horizon</h3><p>From the KC kickoff, he knew Kernel needed Merchant-to-location assignment. One system, many fixes: Merchants see their own locations, better KPIs, per-location competitors.</p><p class="ev"><b>Own GeoGrains data:</b> historical bids + forward curves, off CDP (building now)<br><b>CargillAg:</b> fresh posted bids, not third-party data</p></div>
+  </div>
+</div>
+    <footer><span class="brand"><svg width="18" height="18" overflow="visible" style="display: block;" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Logo">
+<circle id="Circle" cx="16" cy="16" r="16" fill="#00843D"/>
+<g id="Icon">
+<path id="Rectangle 1" d="M8.01719 14.3877C7.56418 9.63113 11.3046 5.51752 16.0828 5.51752C20.8609 5.51752 24.6013 9.63113 24.1483 14.3877L23.7842 18.2113C23.406 22.1818 20.0713 25.2141 16.0828 25.2141C12.0943 25.2141 8.75948 22.1818 8.38134 18.2113L8.01719 14.3877Z" fill="white"/>
+<path id="Rectangle 2" d="M11.4258 14.164C12.1214 20.0694 13.5839 28.966 16.0827 28.966C18.5814 28.966 20.0439 20.0694 20.7395 14.164C21.0656 11.3953 18.8705 9.03498 16.0827 9.03498C13.2949 9.03498 11.0997 11.3953 11.4258 14.164Z" fill="#00843D"/>
+<path id="Rectangle 2 (Stroke)" d="M16.0827 9.03498C18.8705 9.03501 21.0656 11.3954 20.7395 14.164C20.044 20.0694 18.5814 28.9659 16.0827 28.966C13.584 28.966 12.1212 20.0692 11.4257 14.1638C11.0997 11.3952 13.295 9.03498 16.0827 9.03498ZM16.0827 10.6902C14.8804 10.6745 13.7336 11.4201 13.2829 12.4859C13.0821 12.9488 13.0086 13.4552 13.0695 13.9703C13.1614 14.7501 13.2607 15.5295 13.368 16.3063C13.6768 18.5247 14.043 20.7393 14.5547 22.8628C14.8134 23.9236 15.1091 24.9658 15.4841 25.8954C15.6669 26.3471 15.878 26.7772 16.0827 27.0746C16.2507 26.8298 16.4281 26.4881 16.5838 26.1277C16.9376 25.308 17.2247 24.3642 17.4744 23.4051C17.9695 21.4842 18.3285 19.4672 18.6334 17.4461C18.8063 16.2921 18.9591 15.1294 19.0957 13.9703C19.3498 12.2851 17.835 10.6427 16.0827 10.6902Z" fill="white"/>
+</g>
+</g>
+</svg>
+ Kernel</span><span>The case for an FTE · Brenden Greenwood</span><span>2 / 4</span></footer>
+  </div>
+</section>
+<section class="slide chain-slide" id="s3" aria-label="Slide 3 of 4: He does the work of two or three people">
+  <div class="canvas">
+    <p class="kicker">One person, one agentic loop</p>
+    <h2>He does the work of two or three people</h2>
+    <div class="body">
+  <ol class="chain">
+    <li><h3>Learn</h3><p>Interviews, UAT and usage data. 47 Confluence pages.</p></li>
+    <li><h3>Design &amp; build</h3><p>Figma and real code, on a design system tuned to grain.</p></li>
+    <li><h3>Release</h3><p>Ships to production. Originator Scenarios: ~26 hours.</p></li>
+    <li><h3>Learn more</h3><p>Users react to their own data. That feeds the next build. ↺</p></li>
+  </ol>
+  <div class="tail">
+    <div><p class="fit"><strong>Every step runs agentically, on his own pipeline.</strong> He built connected AI agents for research, Figma design, the design system and code. They hand work to each other. He reviews every step.</p>
+    <p class="fit"><strong>Faster, not sloppier.</strong> AI builds what you ask for, even when it’s wrong. He knows grain and Cargill’s stack, so he catches it. Invited to demo it at UX COE.</p></div>
+    <blockquote>“I’ve never seen someone do this in app like you do… You speed up the entire development process an insane amount.”<cite>Jayla Williams, Kernel engineer</cite></blockquote>
+  </div>
+</div>
+    <footer><span class="brand"><svg width="18" height="18" overflow="visible" style="display: block;" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Logo">
+<circle id="Circle" cx="16" cy="16" r="16" fill="#00843D"/>
+<g id="Icon">
+<path id="Rectangle 1" d="M8.01719 14.3877C7.56418 9.63113 11.3046 5.51752 16.0828 5.51752C20.8609 5.51752 24.6013 9.63113 24.1483 14.3877L23.7842 18.2113C23.406 22.1818 20.0713 25.2141 16.0828 25.2141C12.0943 25.2141 8.75948 22.1818 8.38134 18.2113L8.01719 14.3877Z" fill="white"/>
+<path id="Rectangle 2" d="M11.4258 14.164C12.1214 20.0694 13.5839 28.966 16.0827 28.966C18.5814 28.966 20.0439 20.0694 20.7395 14.164C21.0656 11.3953 18.8705 9.03498 16.0827 9.03498C13.2949 9.03498 11.0997 11.3953 11.4258 14.164Z" fill="#00843D"/>
+<path id="Rectangle 2 (Stroke)" d="M16.0827 9.03498C18.8705 9.03501 21.0656 11.3954 20.7395 14.164C20.044 20.0694 18.5814 28.9659 16.0827 28.966C13.584 28.966 12.1212 20.0692 11.4257 14.1638C11.0997 11.3952 13.295 9.03498 16.0827 9.03498ZM16.0827 10.6902C14.8804 10.6745 13.7336 11.4201 13.2829 12.4859C13.0821 12.9488 13.0086 13.4552 13.0695 13.9703C13.1614 14.7501 13.2607 15.5295 13.368 16.3063C13.6768 18.5247 14.043 20.7393 14.5547 22.8628C14.8134 23.9236 15.1091 24.9658 15.4841 25.8954C15.6669 26.3471 15.878 26.7772 16.0827 27.0746C16.2507 26.8298 16.4281 26.4881 16.5838 26.1277C16.9376 25.308 17.2247 24.3642 17.4744 23.4051C17.9695 21.4842 18.3285 19.4672 18.6334 17.4461C18.8063 16.2921 18.9591 15.1294 19.0957 13.9703C19.3498 12.2851 17.835 10.6427 16.0827 10.6902Z" fill="white"/>
+</g>
+</g>
+</svg>
+ Kernel</span><span>The case for an FTE · Brenden Greenwood</span><span>3 / 4</span></footer>
+  </div>
+</section>
+<section class="slide s4" id="s4" aria-label="Slide 4 of 4: A full pipeline ahead, all needing continuity">
+  <div class="canvas">
+    <p class="kicker">What’s next</p>
+    <h2>A full pipeline ahead, all needing continuity</h2>
+    <div class="body">
+  <div class="canada"><h3>Roll out to Canada<em>A major initiative</em></h3><p>A completely different market. Originators will need to crowd-source competitor bids, which is also wanted for the US.</p></div>
+  <div class="next6">
+    <div><h3>Drive adoption</h3><p>Run the adoption plan: interviews with each Merchant group, surveys, and tracking against the targets.</p></div>
+    <div><h3>Merchant experience at scale</h3><p>A dashboard of what happened to their bids, lasso selection of producers, nearby Cargill scenarios, map usability.</p></div>
+    <div><h3>Kernel for SARs in the field</h3><p>SARs want Kernel on their phones. A mobile version is next.</p></div>
+    <div><h3>Predict who has grain</h3><p>Merchants see supply on the map while pricing. Originators see the producers most likely to sell first.</p></div>
+    <div><h3>Sell-side discovery</h3><p>Months of interviews with Merchants on how and where they sell what they buy.</p></div>
+    <div class="why"><h3>Why it has to be him</h3><p>Canada means learning a new market from scratch. This work depends on the domain knowledge and user relationships he’s already built.</p></div>
+  </div>
+</div>
+    <footer><span class="brand"><svg width="18" height="18" overflow="visible" style="display: block;" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Logo">
+<circle id="Circle" cx="16" cy="16" r="16" fill="#00843D"/>
+<g id="Icon">
+<path id="Rectangle 1" d="M8.01719 14.3877C7.56418 9.63113 11.3046 5.51752 16.0828 5.51752C20.8609 5.51752 24.6013 9.63113 24.1483 14.3877L23.7842 18.2113C23.406 22.1818 20.0713 25.2141 16.0828 25.2141C12.0943 25.2141 8.75948 22.1818 8.38134 18.2113L8.01719 14.3877Z" fill="white"/>
+<path id="Rectangle 2" d="M11.4258 14.164C12.1214 20.0694 13.5839 28.966 16.0827 28.966C18.5814 28.966 20.0439 20.0694 20.7395 14.164C21.0656 11.3953 18.8705 9.03498 16.0827 9.03498C13.2949 9.03498 11.0997 11.3953 11.4258 14.164Z" fill="#00843D"/>
+<path id="Rectangle 2 (Stroke)" d="M16.0827 9.03498C18.8705 9.03501 21.0656 11.3954 20.7395 14.164C20.044 20.0694 18.5814 28.9659 16.0827 28.966C13.584 28.966 12.1212 20.0692 11.4257 14.1638C11.0997 11.3952 13.295 9.03498 16.0827 9.03498ZM16.0827 10.6902C14.8804 10.6745 13.7336 11.4201 13.2829 12.4859C13.0821 12.9488 13.0086 13.4552 13.0695 13.9703C13.1614 14.7501 13.2607 15.5295 13.368 16.3063C13.6768 18.5247 14.043 20.7393 14.5547 22.8628C14.8134 23.9236 15.1091 24.9658 15.4841 25.8954C15.6669 26.3471 15.878 26.7772 16.0827 27.0746C16.2507 26.8298 16.4281 26.4881 16.5838 26.1277C16.9376 25.308 17.2247 24.3642 17.4744 23.4051C17.9695 21.4842 18.3285 19.4672 18.6334 17.4461C18.8063 16.2921 18.9591 15.1294 19.0957 13.9703C19.3498 12.2851 17.835 10.6427 16.0827 10.6902Z" fill="white"/>
+</g>
+</g>
+</svg>
+ Kernel</span><span>The case for an FTE · Brenden Greenwood</span><span>4 / 4</span></footer>
+  </div>
+</section>
+<nav aria-label="Slides"><button id="prev" aria-label="Previous slide">←</button><button id="next" aria-label="Next slide">→</button></nav>
+<script>
+const REVEAL = '.lede,.meta,.frow,.also,.big,.bar-block,.gap,.chain li,blockquote,.fit,.order li,tr,.ask,.two > div,.body > .note,.qa,.qcite,.mini3 .big,.how .gap,.canada,.next6 > div';
+const slides = [...document.querySelectorAll('.slide')];
+slides.forEach(sl => sl.querySelectorAll(REVEAL).forEach((el, i) => { el.classList.add('rv'); el.style.setProperty('--i', i); }));
+const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+
+function countUp(sl) {
+  if (reduce.matches) return;
+  sl.querySelectorAll('.big b').forEach(b => {
+    const node = b.firstChild; if (!node || node.nodeType !== 3) return;
+    b.dataset.orig ??= node.textContent;
+    const m = b.dataset.orig.match(/^([^0-9]*)([0-9,]+)(.*)$/); if (!m) return;
+    const target = +m[2].replace(/,/g, ''), t0 = performance.now() + 250, dur = 1100;
+    const tick = now => {
+      const p = Math.min(1, Math.max(0, (now - t0) / dur)), v = Math.round(target * (1 - Math.pow(1 - p, 3)));
+      node.textContent = m[1] + v.toLocaleString('en-US') + m[3];
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    node.textContent = m[1] + '0' + m[3];
+    requestAnimationFrame(tick);
+  });
+}
+
+let cur = -1;
+function fit() {
+  const s = Math.min(innerWidth / 1280, innerHeight / 720) * 0.94;
+  document.documentElement.style.setProperty('--s', s);
+}
+function go(i) {
+  i = Math.max(0, Math.min(slides.length - 1, i));
+  if (i === cur) return;
+  document.documentElement.style.setProperty('--dir', i > cur ? 1 : -1);
+  const prev = slides[cur];
+  if (prev) {
+    prev.classList.remove('on'); prev.classList.add('leaving'); prev.inert = true;
+    setTimeout(() => prev.classList.remove('leaving'), 700);
+  }
+  cur = i;
+  const sl = slides[cur];
+  sl.classList.remove('leaving'); sl.inert = false;
+  void sl.offsetWidth;  // restart CSS animations on re-entry
+  sl.classList.add('on');
+  countUp(sl);
+  document.querySelector('.progress').style.width = ((cur + 1) / slides.length * 100) + '%';
+  history.replaceState(null, '', '#' + (cur + 1));
+}
+slides.forEach(sl => sl.inert = true);
+addEventListener('resize', fit);
+addEventListener('keydown', e => {
+  if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); go(cur + 1); }
+  else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); go(cur - 1); }
+  else if (e.key === 'Home') go(0);
+  else if (e.key === 'End') go(slides.length - 1);
+});
+document.getElementById('prev').onclick = () => go(cur - 1);
+document.getElementById('next').onclick = () => go(cur + 1);
+addEventListener('beforeprint', () => { slides.forEach(sl => sl.inert = false); });
+addEventListener('afterprint', () => slides.forEach((sl, j) => sl.inert = j !== cur));
+fit();
+go((parseInt(location.hash.slice(1)) || 1) - 1);
+</script>
+</body></html>
