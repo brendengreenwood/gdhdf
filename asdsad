@@ -12,7 +12,11 @@ The Merchant's central business object. It models a pricing decision for one mar
 
 **Lifecycle (target):** create → configure market and pricing → compute landscape → review → Save & Publish → reopen and edit → recompute → republish → archive. Each material recomputation should create an identifiable revision. Kernel must be able to tell apart the editable config, the last computed results, the results being published, the last published results, and older published results that Originator actions still point to.
 
-**Revisions are coming**, built on a new snapshot back end. Source: Brenden, 2026-11-07. Today, refreshing the Posted Bid Date saves over the same scenario ID (PUT `/v1/scenarios/{id}`). No version or snapshot is kept.
+**Versions.** A scenario is one identity; its versions are snapshots of that one scenario. Every save creates a version, whether the scenario is a draft or published: a Posted Bid Date refresh, a Max Bid change and so on are all new versions of the same scenario. Nothing in a version can change identity; that would be a different scenario. Status (Draft, Published, Archived, Expired) belongs to the scenario, not to versions; older versions are history, not "archived." Source: Brenden, 2026-11-07.
+
+**Who sees what:** Originators see the latest published version only. Merchants see full version history, drafts included. Reporting sees published versions only. Stale uses the current version's Posted Bid Date.
+
+Today, refreshing the Posted Bid Date saves over the same scenario ID (PUT `/v1/scenarios/{id}`), and no version is kept. The DB field for the Posted Bid Date is `scenario_date`.
 
 **Status:**
 - **Draft:** being built or tested before commitment. Persistent drafts are coming.
@@ -22,12 +26,33 @@ The Merchant's central business object. It models a pricing decision for one mar
 
 Today the code has `published | draft | archived` (`types/scenario.ts:5`). Nothing checks whether the window has ended, so bids from ended windows still show to Originators.
 
-**Stale:** the **Posted Bid Date** is older than a threshold set by when the shipment window starts:
-- Window starts within 2 months: stale after 2 business days.
-- Within 6 months: after 10 business days.
-- More than 6 months out: never stale.
+**Stale** depends only on the age of the **Posted Bid Date**. Kernel counts business days since the Posted Bid Date and compares that to a limit.
 
-Weekends are skipped; holidays aren't. Committed by Brenden, 2026-11-07; already in `marketDataStale.ts:9-48`. Today only the Scenarios list and the editor use the Posted Bid Date. The Navigator and the Originator header use the scenario's last edit. Accept Bid and Producer Details use the bid's last update. Those still need to switch to the Posted Bid Date.
+**The limit depends on the band.** The band is a relative-time label: it measures how far the Time of Shipment start is from the current month, in whole calendar months (Ian's rule):
+- **Nearby** (current or next month): 2 business days.
+- **Deferred** (2–5 months out): 10 business days.
+- **6+ months:** never stale.
+
+So the same scenario moves from Deferred to Nearby as time passes, and its limit tightens from 10 days to 2. Decided by Brenden, 2026-11-07. The code today counts 2 or 6 months from today's date (`marketDataStale.ts:19`), so it needs to switch to calendar months.
+
+**TOS and futures month.** A Time of Shipment is always priced against a CBOT futures month (the Contract Month). Each futures month covers the months after the previous contract, up to and including its own month. Source: Confluence "CBOT Futures Reference" (4737499146, v4, 2026-09-16).
+
+| Corn futures | TOS months    |     | Soybean futures | TOS months |
+| ------------ | ------------- | --- | --------------- | ---------- |
+| Mar (H)      | Jan, Feb, Mar |     | Jan (F)         | Dec, Jan   |
+| May (K)      | Apr, May      |     | Mar (H)         | Feb, Mar   |
+| Jul (N)      | Jun, Jul      |     | May (K)         | Apr, May   |
+| Sep (U)      | Aug, Sep      |     | Jul (N)         | Jun, Jul   |
+| Dec (Z)      | Oct, Nov, Dec |     | Aug (Q)         | Aug        |
+|              |               |     | Sep (U)         | Sep        |
+|              |               |     | Nov (X)         | Oct, Nov   |
+|              |               |     |                 |            |
+
+Symbols follow the Cargill convention: root + month code + year digit, e.g. CZ6 is Corn, December 2026. CBOT's own root symbols are ZC and ZS.
+
+**Business days** follow the CBOT grain trading calendar, which is standard exchange practice and what Cargill follows: weekends and CME grain holidays are skipped; early-close days count. Source: CME Group Holiday and Trading Hours (cmegroup.com/trading-hours.html); Brenden, 2026-11-07. The code today skips weekends only (`marketDataStale.ts`), so it needs a CME holiday list.
+
+The thresholds are already in `marketDataStale.ts:9-48`. Today only the Scenarios list and the editor use the Posted Bid Date. The Navigator and the Originator header use the scenario's last edit. Accept Bid and Producer Details use the bid's last update. Those still need to switch to the Posted Bid Date.
 
 **Fields (API → UI):**
 | API field | UI label |
@@ -100,14 +125,17 @@ Weekends are skipped; holidays aren't. Committed by Brenden, 2026-11-07; already
 3. **Who touches it.** Kernel gives scenarios to Merchants only. Austin (SAR) describes adjusting one competitor bid so "now Jonathan knows". That's closer to the research agent's `field_signal` → `market_scenario` link than to editing a scenario.
 4. **Two entities in the ontology.** The research agent has both `pricing_scenario` (concept) and `market_scenario` (object). Kernel has one. Don't change the agent DB. Raise it as a proposal there if it matters.
 5. **One scenario vs all windows.** Kernel stores, edits and publishes one scenario at a time, but Merchants manage all windows for a location and commodity together. When the nearest window rolls forward, the Merchant archives the old scenario and creates a new one. The new one gets a new ID, so edit history and Originator results stay attached to the old scenario. Archiving mostly means the window expired or was replaced, not that the Merchant rebuilt the scenario because editing failed (see item 2). Once Expired exists, ended windows won't need archiving.
+6. **Versioning design (STRAT-674).** Jayla's discovery doc (Confluence 5131436044, v9, Oct 29, not yet built) stores each version as its own scenario row, grouped by `lineage_id` from copying. Publishing a new version archives the old one, and edits to a draft overwrite it in place. This differs from the model in three ways:
+   - Draft saves aren't versioned.
+   - Archived also means "superseded."
+   - The doc lists commodity, location and TOS among the inputs reporting tracks across versions, so a copy may be able to change identity fields within one lineage.
+
+   Reporting published-only matches.
 
 ## Open questions
-- With snapshots, what creates a revision: every save, or only a market-data refresh vs a strategy change? Needed to tell a refresh apart from the Merchant's own strategy changes.
-- Bands: Ian's rule counts whole calendar months (Nearby = current + next month, Jan–Apr = Deferred). The code counts 2 or 6 months from today. Which one should the labels and thresholds use?
 - Does Expired happen automatically when the window ends? Do Originators stop seeing those scenarios?
-- Should stale skip holidays?
+- Who keeps the CME grain holiday list current in Kernel? CME publishes it a year or two at a time.
 - Once the Cargill-data switch lands, is the Cargill bid live, or still tied to the Posted Bid Date?
-- The Nov 5 audit data has a `scenarioDate` field that kernel-ui doesn't have. Is it kernel-api's name for `date`?
 - Automatic competitor prices: what happens to a Merchant's manual competitor override (see Austin's quote)?
 - "Who has grain": what inputs feed it, and is it a scenario input or a computed result? No observations yet.
 - Which Cargill system holds the posted bid the scenario should tie to?
@@ -137,3 +165,7 @@ Weekends are skipped; holidays aren't. Committed by Brenden, 2026-11-07; already
 - 2026-11-07: Added Status (Draft, Published, Archived, new Expired), coming revisions on a snapshot back end, and enforced identity. Source: Brenden.
 - 2026-11-07: Added the API-to-UI field map and today's data sources from a kernel-ui code review (994b3591).
 - 2026-11-07: Resolved "Draft vs published" (persistent drafts are coming). Source: Brenden.
+- 2026-11-07: Bands decided: Ian's calendar-month rule sets both the labels and the stale limits (Nearby 2 business days, Deferred 10, 6+ months never). Stale is measured only from the Posted Bid Date; the band only sets the limit. Source: Brenden.
+- 2026-11-07: Added the CBOT futures month → TOS months table for corn and soybeans. Source: Confluence 4737499146; matches every scenario in the Nov 5 data.
+- 2026-11-07: Business days follow the CBOT grain trading calendar (skip weekends and CME grain holidays; early-close days count). Source: Brenden; CME Group Holiday and Trading Hours.
+- 2026-11-07: Versions defined: every save (draft or published) is a version of one scenario; status belongs to the scenario; reporting is published-only. Compared with STRAT-674 (divergence 6). Resolved the "what creates a revision" and `scenarioDate` questions. Source: Brenden; Confluence 5131436044.
