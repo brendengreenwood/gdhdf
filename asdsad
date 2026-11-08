@@ -1,0 +1,139 @@
+
+# Pricing Scenario
+
+## In Kernel
+The Merchant's central business object. It models a pricing decision for one market, runs it through computation and review, and is the record that links published strategy to Originator execution. Source: `~/Code/kernel-e2e-testing/DOMAIN.md`, "Pricing scenario".
+
+**Identity:** `Location + Commodity + Contract Month + Time of Shipment`. These stay fixed when editing. Change one and it's a different scenario. **Posted Bid Date is not part of identity.** It's the market-data date, so it can be refreshed on the same scenario.
+
+**Identity will be enforced.** Source: Brenden, 2026-11-07. Today it isn't. The UI duplicate check also includes the Merchant, only shows a warning, and only checks page 1. kernel-api accepts duplicates (`useScenarioDuplicateCheck.ts:56`).
+
+**Posted bids by shipment window.** A Merchant's posted bids for one location and commodity have one row per shipment window. Each row is its own Pricing Scenario, because Time of Shipment is part of identity. Kernel has no object for the whole set; it only stores the individual scenarios. Source: pattern seen in usage data, confirmed by Brenden, 2026-10-22 ("thats literally how it works").
+
+**Lifecycle (target):** create → configure market and pricing → compute landscape → review → Save & Publish → reopen and edit → recompute → republish → archive. Each material recomputation should create an identifiable revision. Kernel must be able to tell apart the editable config, the last computed results, the results being published, the last published results, and older published results that Originator actions still point to.
+
+**Revisions are coming**, built on a new snapshot back end. Source: Brenden, 2026-11-07. Today, refreshing the Posted Bid Date saves over the same scenario ID (PUT `/v1/scenarios/{id}`). No version or snapshot is kept.
+
+**Status:**
+- **Draft:** being built or tested before commitment. Persistent drafts are coming.
+- **Published:** live for Originators.
+- **Archived:** the Merchant archived it.
+- **Expired (new):** the Time of Shipment ended. Today's Archived splits into Archived and Expired. Source: Brenden, 2026-11-07.
+
+Today the code has `published | draft | archived` (`types/scenario.ts:5`). Nothing checks whether the window has ended, so bids from ended windows still show to Originators.
+
+**Stale:** the **Posted Bid Date** is older than a threshold set by when the shipment window starts:
+- Window starts within 2 months: stale after 2 business days.
+- Within 6 months: after 10 business days.
+- More than 6 months out: never stale.
+
+Weekends are skipped; holidays aren't. Committed by Brenden, 2026-11-07; already in `marketDataStale.ts:9-48`. Today only the Scenarios list and the editor use the Posted Bid Date. The Navigator and the Originator header use the scenario's last edit. Accept Bid and Producer Details use the bid's last update. Those still need to switch to the Posted Bid Date.
+
+**Fields (API → UI):**
+| API field | UI label |
+|---|---|
+| `date` | Posted Bid Date |
+| `minBid` | Posted Bid |
+| `maxBid` | Max Bid |
+| `bidLeeway` | Adjust Max Bid |
+| `transportCost` | Distance Cost ($/mi) |
+| `distanceMethod` | Real / Estimated (`travel` exists only in old saved data) |
+| `modifiedBids` | Merchant overrides of competitor bids |
+| `contract` | Futures code (e.g. ZSX6) |
+| `location` + `locationName` | Lynx location ID + name |
+
+**Producer range:** Kernel already answers whether a producer is "in range". Source: Brenden, 2026-10-10.
+
+**Known gaps (today):** scenarios don't yet behave as durable objects. State can stay tied to the form, the browser session or a computation response. Reopening or publishing can rebuild or swap state instead of restoring what the Merchant reviewed. The E2E final audit flags publication persistence and existing-scenario editing as lifecycle-breaking (`~/Code/kernel-e2e-testing`, KERNEL-001–019). Today the Cargill posted bid loads for the selected Posted Bid Date (`bids-at-location`). It isn't live. Picking a contract fills in Posted Bid, which the Merchant can then edit. Editing it doesn't update CargillAg. Competitor bids load from GeoGrains for the same date. The move to Cargill data is in flight: kernel-api has `/v1/cargill-ag-bids`, but kernel-ui doesn't call it yet. Today the Merchant refreshes market data manually. Automatic refresh is the target (see Product direction).
+
+**Product direction (post-MVP).** Source: Brenden, 2026-10-10.
+- **Target:** scenarios refresh **automatically** with market data (daily). Today the Merchant refreshes manually.
+- Competitor prices update **automatically**.
+- Each scenario includes predictive **"who has grain"** modeling.
+- The Merchant's posted bid is tied to their **posted bid in Cargill's systems**, not to Geograins third-party market data.
+
+**Design problems (apply now with manual refresh and later with automatic).** Source: Brenden, 2026-10-10.
+1. Which competitors need to be surfaced?
+2. How do we keep the Merchant informed on the success or failure of their strategy since they last made a change?
+3. "How many producers are relevant right now? And given that, what volume can I expect to pull?"
+
+## In users' words
+
+**Merchant**
+- "Give me some default parameters that I want... and then change it quick." (Jonathan Baker, research agent `jonathan-baker-strategic-pricing-connect-1`)
+- "Monday mornings I send out an update to a pretty wide group... about 14 originators... give them some direction and what their week's going to look like." (Jonathan Baker, same transcript)
+
+**GOM**
+- "We start off like early Monday morning, we get on a call... and talk about our need is for Albion because Albion feeds ethanol plant." (Reah, research agent `reah-gom-talk-strategic-pricing-20260309`)
+
+**SAR**
+- "Maybe you can't model a whole scenario. Like a merchant could, but you could also add something like, oh, I know this competitor's bid is this, so I can just change it. And then now Jonathan knows that, right?" (Austin Pipes, research agent `austin-pipes-sar-strategic-pricing-2026-03-part-3`)
+
+**UAT and prototype notes**
+- "Editing a scenario means rebuilding it." ([UAT Deck](../History/03%20MVP%20Launch%20%26%20UAT/2026-09-03%20UAT%20Deck.md))
+- "Merchant repeatedly rebuilds scenarios; continuity between sessions is weak." ([Demo Problem Statements](../History/02%20Prototype%20%26%20Design/meetings/2026-05-12%20Demo%20Problem%20Statements.md))
+- "When I open a scenario in edit mode, i get an API error." ([Map Updates](../History/02%20Prototype%20%26%20Design/design/2026-07-22%20Map%20Updates.md))
+
+## How users think about it
+- **Monday planning (POC research).** Merchants set direction on Monday and sent it to Originators, then revised mid-week as futures and field intel moved. Jonathan and Reah quotes above; research agent `market_scenario` (from user note `user-note-2026-04-01-weekly-loop-monday-scenario`). That was partly how they worked and partly because the POC made them rebuild each time. The new model doesn't design around Monday. The target is automatic refresh (today it's manual). Source: Brenden, 2026-10-10.
+- **Something they publish to people.** The output is direction for Originators, not just a calculation. Research agent `market_scenario` → produces `guidance_package`; Jonathan quote above.
+- **One core, two modes.** Some merchants use scenarios to read the market, others to drive execution, targeting and handoff. Research agent `pricing_scenario` (evidence: Ben Schulenberg shadowing, Jonathan Baker connect).
+- **Should persist and be quick to change.** Defaults, saved state, fast edits. Jonathan quote; [Merchant persona](../Personas/Merchant.md) ("No multi-session support").
+- **Build every window, then roll forward.** Usage data from Sep 1 to Oct 21 shows two patterns:
+  - Building every window on day one: Ian Bowles built 9 Albion scenarios on Sep 22, and Artur Bogomolov built Cedar Rapids on Sep 23. Artur archived the Jan–Mar windows on Oct 8.
+  - Rolling the nearest window forward: Matt Carmody has made 6 Kansas City S2026X scenarios, archiving the old one each time.
+
+  Only 1 of the 20 archived Merchant scenarios was rebuilt with the same identity. Source: Kernel Usage Metrics v9 report (Activity audit + scenarios API).
+
+## Language map
+| Users say | Kernel says | Match? |
+|---|---|---|
+| "scenario" | Pricing scenario | Yes |
+| posture, weekly stance, Monday model (research-agent terms, not verbatim) | none | No Kernel term. POC-era |
+| guidance, guidance package (research-agent terms) | Save & Publish, published producer bids | Probably same thing. Unconfirmed |
+| board month, futures month (research-agent aliases) | Contract Month | Probably same. Unconfirmed |
+| "update" to originators (Jonathan) | Publish | Probably same. Unconfirmed |
+
+## Where they diverge
+1. **Manual rhythm vs automatic refresh.** In the POC research, merchants worked on a weekly manual rhythm. Today they refresh market data manually. The target is a scenario that refreshes itself, so the Merchant's job moves from rebuilding to monitoring: is my strategy working since my last change? No observations yet of merchants using auto-refreshed scenarios.
+2. **Editing.** Users expect "change it quick". Today editing means delete and rebuild (UAT Deck), and reopen doesn't restore the computed landscape (E2E audit). DOMAIN.md treats this as debt, not the model.
+3. **Who touches it.** Kernel gives scenarios to Merchants only. Austin (SAR) describes adjusting one competitor bid so "now Jonathan knows". That's closer to the research agent's `field_signal` → `market_scenario` link than to editing a scenario.
+4. **Two entities in the ontology.** The research agent has both `pricing_scenario` (concept) and `market_scenario` (object). Kernel has one. Don't change the agent DB. Raise it as a proposal there if it matters.
+5. **One scenario vs all windows.** Kernel stores, edits and publishes one scenario at a time, but Merchants manage all windows for a location and commodity together. When the nearest window rolls forward, the Merchant archives the old scenario and creates a new one. The new one gets a new ID, so edit history and Originator results stay attached to the old scenario. Archiving mostly means the window expired or was replaced, not that the Merchant rebuilt the scenario because editing failed (see item 2). Once Expired exists, ended windows won't need archiving.
+
+## Open questions
+- With snapshots, what creates a revision: every save, or only a market-data refresh vs a strategy change? Needed to tell a refresh apart from the Merchant's own strategy changes.
+- Bands: Ian's rule counts whole calendar months (Nearby = current + next month, Jan–Apr = Deferred). The code counts 2 or 6 months from today. Which one should the labels and thresholds use?
+- Does Expired happen automatically when the window ends? Do Originators stop seeing those scenarios?
+- Should stale skip holidays?
+- Once the Cargill-data switch lands, is the Cargill bid live, or still tied to the Posted Bid Date?
+- The Nov 5 audit data has a `scenarioDate` field that kernel-ui doesn't have. Is it kernel-api's name for `date`?
+- Automatic competitor prices: what happens to a Merchant's manual competitor override (see Austin's quote)?
+- "Who has grain": what inputs feed it, and is it a scenario input or a computed result? No observations yet.
+- Which Cargill system holds the posted bid the scenario should tie to?
+- What counts as strategy success or failure: bids won, volume, competitor moves?
+- What makes a competitor worth surfacing?
+- Beyond "in range", what makes a producer "relevant right now"? No observations yet.
+- What should expected volume be based on? No observations yet.
+- Is "guidance" the word Originators use for what they receive from a published scenario?
+- When the nearest window rolls, does the Merchant see the new scenario as the same position continuing (carrying history and Originator results over), or as a fresh start? No observations yet.
+- What do Merchants call the set of scenarios for a location and commodity? No observations yet.
+- Should Kernel have a view or object across all windows, for example to create or roll windows together? Proposal, no evidence yet.
+
+## Related
+- Concepts (not written yet): Landscape, Producer bid, Posted Bid Date, Competitor, Originator feedback
+- Personas: [Merchant](../Personas/Merchant.md), [Origination Specialist](../Personas/origination-specialist.md)
+- Design history: Edit Scenario workflow, six-step prototype in Figma `MVP v1.02`
+
+## Changelog
+- 2026-10-10: Pilot draft. Product model from DOMAIN.md, language from research-agent transcripts and vault notes.
+- 2026-10-10: Product direction added (daily updates, automatic competitor prices, "who has grain" modeling, posted bid from Cargill systems). Weekly cadence relabelled as POC-era. Source: Brenden.
+- 2026-10-10: Reframed weekly cadence. Monday planning is real practice; weekly rebuilds were a POC limit removed by connected data and durable scenarios. Source: Brenden.
+- 2026-10-10: Monday dropped as a design driver. Automatic refresh is the target; today it's manual. Design problems: competitor surfacing, strategy feedback since last change, and relevant producers / expected volume. Kernel already answers "in range". Source: Brenden.
+- 2026-10-22: Added one scenario per shipment window, confirmed by Brenden. Usage evidence from the v9 metrics report. New divergence (one scenario vs all windows) and open questions on rolling windows.
+- 2026-10-22: Removed an invented name for the set of shipment windows. It was the assistant's word, not Brenden's or users'; use plain descriptions. Source: Brenden.
+- 2026-10-22: Added working definition of stale (>2 business days since last create/edit). Baseline: 19 of 34 live scenarios as of Oct 21. Replaces the earlier 15+ calendar-day measure (14 of 34). Source: Brenden.
+- 2026-11-07: Stale now uses the Posted Bid Date with 2 / 10 / never thresholds, replacing the Oct 22 measure (>2 business days since the last create or edit, used in usage reports v9–v17). Source: Brenden; code `marketDataStale.ts`.
+- 2026-11-07: Added Status (Draft, Published, Archived, new Expired), coming revisions on a snapshot back end, and enforced identity. Source: Brenden.
+- 2026-11-07: Added the API-to-UI field map and today's data sources from a kernel-ui code review (994b3591).
+- 2026-11-07: Resolved "Draft vs published" (persistent drafts are coming). Source: Brenden.
